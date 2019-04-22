@@ -4,7 +4,7 @@ orbs:
   codecov: codecov/codecov@1.0.4
 
 jobs:
-  build-and-test:
+  main:
     docker:
       - image: circleci/golang:1.11
     steps:
@@ -19,3 +19,9 @@ jobs:
       - codecov/upload:
           file: pkg/c.out
           flags: unit-test
+
+workflows:
+  version: 2
+  build_test:
+    jobs:
+      - main
