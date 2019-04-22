@@ -10,8 +10,13 @@ jobs:
     steps:
       - checkout
       - run:
+          name: format & lint
+          command: |
+            diff -u <(echo -n) <(gofmt -d -s .)
+            go vet ./...
+      - run:
           name: build
-          command: go build ./...
+          command: go build -v ./...
       - run:
           name: unit-test
           command: go test ./... -coverprofile=c.out
