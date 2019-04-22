@@ -1,0 +1,21 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov
+
+jobs:
+  build-and-test:
+    docker:
+      - image: circleci/golang:1.11
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: go build ./...
+      - run:
+          name: unit-test
+          command: go test ./... -coverprofile=c.out
+          working_directory: ./pkg
+      - codecov/upload:
+          file: pkg/c.out
+          flags: unit-test
