@@ -1,4 +1,4 @@
-package object
+package object_store
 
 import (
 	"io"
@@ -11,7 +11,7 @@ import (
 // The bucket name is supposed to be passed when the interface is constructed.
 // The bucket is expected to be present or will be created during the
 // object initialization.
-type Store interface {
+type ObjectStorer interface {
 	Get(object string) (io.ReadCloser, error)
 	Put(object string, data io.Reader) error
 	Stat(object string) (ObjectInfo, error)
