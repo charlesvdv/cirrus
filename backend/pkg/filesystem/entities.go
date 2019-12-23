@@ -1,26 +1,18 @@
-package files
+package filesystem
 
-import (
-	"time"
-)
+import "time"
 
-type UserID = string
 type InodeID = string
-
-type File struct {
-	inode
-	size uint64
-}
-
-type Directory struct {
-	inode
-}
 
 type inode struct {
 	id          InodeID
 	name        string
 	parentID    InodeID
 	createdTime time.Time
+}
+
+type Directory struct {
+	inode
 }
 
 func (i *inode) ID() InodeID {
@@ -37,8 +29,4 @@ func (i *inode) ParentID() InodeID {
 
 func (i *inode) CreatedTime() time.Time {
 	return i.createdTime
-}
-
-func (f *File) Size() uint64 {
-	return f.size
 }
