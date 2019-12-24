@@ -1,4 +1,4 @@
-package http
+package errors
 
 type BadRequestError struct {
 	msg string

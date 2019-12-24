@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	
+	"github.com/charlesvdv/cirrus/backend/pkg/errors"
 )
 
 type errorResponse struct {
@@ -17,11 +19,11 @@ func DecodeRequest(r *http.Request, container interface{}) error {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return NewBadRequestError("Unable to read the body content")
+		return errors.NewBadRequestError("Unable to read the body content")
 	}
 
 	if err := json.Unmarshal(body, container); err != nil {
-		return NewBadRequestError("Invalid body content")
+		return errors.NewBadRequestError("Invalid body content")
 	}
 
 	return nil
@@ -40,7 +42,7 @@ func EncodeResponse(w http.ResponseWriter, container interface{}) {
 func EncodeError(w http.ResponseWriter, receivedErr error) {
 	statusCode := http.StatusInternalServerError
 	message := "internal error"
-	if _, ok := receivedErr.(*BadRequestError); ok {
+	if _, ok := receivedErr.(*errors.BadRequestError); ok {
 		statusCode = http.StatusBadRequest
 		message = receivedErr.Error()
 	}
@@ -68,7 +70,7 @@ func encodeAndWriteBody(w http.ResponseWriter, container interface{}) error {
 func validateContentType(r *http.Request) error {
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		return NewBadRequestError("Invalid Content-Type")
+		return errors.NewBadRequestError("Invalid Content-Type")
 	}
 	return nil
 }

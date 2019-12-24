@@ -8,7 +8,7 @@ import (
 )
 
 type DirectoriesHandler struct {
-	dirService fs.DirectoriesService
+	filesystem fs.UserFilesystem
 }
 
 type CreateDirectoryRequest struct {
@@ -19,7 +19,7 @@ type CreateDirectoryRequest struct {
 type DirectoryResponse struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
-	Parent      string `json:"parent"`
+	ParentID    string `json:"parent-id"`
 	CreatedTime string `json:"created-time"`
 }
 
@@ -29,9 +29,9 @@ func (h *DirectoriesHandler) CreateDirectory(w http.ResponseWriter, r *http.Requ
 		httputils.EncodeError(w, err)
 	}
 
-	directory, err := h.dirService.CreateDirectory(fs.CreateDirectoryRequest{
-		Name:   requestBody.Name,
-		Parent: requestBody.Parent,
+	directory, err := h.filesystem.CreateDirectory(fs.CreateDirectoryRequest{
+		Name:     requestBody.Name,
+		ParentID: requestBody.Parent,
 	})
 	if err != nil {
 		httputils.EncodeError(w, err)
@@ -42,9 +42,9 @@ func (h *DirectoriesHandler) CreateDirectory(w http.ResponseWriter, r *http.Requ
 
 func encodeDirResponse(dir fs.Directory) DirectoryResponse {
 	return DirectoryResponse{
-		ID:          dir.ID(),
+		ID:          dir.ID().String(),
 		Name:        dir.Name(),
-		Parent:      dir.ParentID(),
+		ParentID:    dir.ParentID().String(),
 		CreatedTime: httputils.FormatTime(dir.CreatedTime()),
 	}
 }
