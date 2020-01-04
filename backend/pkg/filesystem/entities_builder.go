@@ -2,37 +2,37 @@ package filesystem
 
 import "time"
 
-func defaultInode() inode {
-	return inode{
+func defaultInodeMetadata() inodeMetadata {
+	return inodeMetadata{
 		id:          generateInodeID(),
 		createdTime: time.Now().UTC(),
-		parentID: emptyInodeID(),
-		name: "",
+		parentID:    emptyInodeID(),
+		name:        "",
 	}
 }
 
 type directoryBuilder struct {
-	inode inode
+	inodeMetadata inodeMetadata
 }
 
 func newDirectoryBuilder() directoryBuilder {
 	return directoryBuilder{
-		inode: defaultInode(),
+		inodeMetadata: defaultInodeMetadata(),
 	}
 }
 
 func (b directoryBuilder) withName(name string) directoryBuilder {
-	b.inode.name = name
+	b.inodeMetadata.name = name
 	return b
 }
 
 func (b directoryBuilder) withParentID(id InodeID) directoryBuilder {
-	b.inode.id = id
+	b.inodeMetadata.id = id
 	return b
 }
 
 func (b directoryBuilder) build() Directory {
-	return Directory {
-		inode: b.inode,
+	return Directory{
+		inodeMetadata: b.inodeMetadata,
 	}
 }
