@@ -20,13 +20,13 @@ func generateInodeID() InodeID {
 		// Should not happen because the implementation of `MarshalText` never return an error
 		// TODO: log something
 	}
-	return InodeID {
+	return InodeID{
 		id: id,
 	}
 }
 
 func emptyInodeID() InodeID {
-	return InodeID {
+	return InodeID{
 		id: []byte{},
 	}
 }
@@ -35,12 +35,12 @@ func inodeIDFromString(rawID string) InodeID {
 	if rawID == "" {
 		return emptyInodeID()
 	}
-	return InodeID {
+	return InodeID{
 		id: []byte(rawID),
 	}
 }
 
-type inode struct {
+type inodeMetadata struct {
 	id          InodeID
 	name        string
 	parentID    InodeID
@@ -48,21 +48,21 @@ type inode struct {
 }
 
 type Directory struct {
-	inode
+	inodeMetadata
 }
 
-func (i *inode) ID() InodeID {
+func (i *inodeMetadata) ID() InodeID {
 	return i.id
 }
 
-func (i *inode) Name() string {
+func (i *inodeMetadata) Name() string {
 	return i.name
 }
 
-func (i *inode) ParentID() InodeID {
+func (i *inodeMetadata) ParentID() InodeID {
 	return i.parentID
 }
 
-func (i *inode) CreatedTime() time.Time {
+func (i *inodeMetadata) CreatedTime() time.Time {
 	return i.createdTime
 }

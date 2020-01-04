@@ -3,7 +3,7 @@ package filesystem
 import "github.com/charlesvdv/cirrus/backend/pkg/errors"
 
 type userFilesystemImpl struct {
-	driveResolver DriveResolver
+	metadataStore MetadataStorer
 }
 
 func (fs *userFilesystemImpl) CreateDirectory(req CreateDirectoryRequest) (Directory, error) {
@@ -11,10 +11,15 @@ func (fs *userFilesystemImpl) CreateDirectory(req CreateDirectoryRequest) (Direc
 		return Directory{}, errors.NewFunctionalError("Directory name can not be empty")
 	}
 
-	parentID := inodeIDFromString(req.ParentID)
-	drive, err := fs.driveResolver.Resolve(parentID)
-	if err != nil {
-		return Directory{}, err
+	var parentID InodeID
+	if req.ParentID == "" {
+		parentID = emptyInodeID()
+	} else {
+		parentID := inodeIDFromString(req.ParentID)
+		_, err := fs.metadataStore.GetDirectory(parentID)
+		if err != nil {
+			return Directory{}, errors.NewFunctionalErrorWithCause("Unknow parent directory", err)
+		}
 	}
 
 	dir := newDirectoryBuilder().
@@ -22,7 +27,7 @@ func (fs *userFilesystemImpl) CreateDirectory(req CreateDirectoryRequest) (Direc
 		withParentID(parentID).
 		build()
 
-	dir, err = drive.CreateDirectory(dir)
+	err := fs.metadataStore.SaveDirectory(dir)
 	if err != nil {
 		return dir, err
 	}
