@@ -8,16 +8,16 @@ const sqlSchema = `
 	SET TIMEZONE = 'UTC';
 	CREATE SCHEMA cirrus;
 
-	CREATE TYPE inode_type AS ENUM ('file', 'directory');
+	CREATE TYPE metadata_type AS ENUM ('file', 'directory');
 
-	CREATE TABLE cirrus.inode (
+	CREATE TABLE cirrus.metadata (
 		id UUID NOT NULL,
 		parent_id UUID,
 		name TEXT NOT NULL,
-		created_time TIMESTAMP,
-		type inode_type,
+		created_time TIMESTAMP NOT NULL,
+		type metadata_type,
 		PRIMARY KEY (id)
-	)
+	);
 `
 
 func setupSchema(db *sql.DB) error {
