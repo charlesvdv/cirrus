@@ -15,17 +15,17 @@ func (fs *userFilesystemImpl) CreateDirectory(req CreateDirectoryRequest) (Direc
 	if req.ParentID == "" {
 		parentID = emptyInodeID()
 	} else {
-		parentID := inodeIDFromString(req.ParentID)
+		parentID := InodeIDFromString(req.ParentID)
 		_, err := fs.metadataStore.GetDirectory(parentID)
 		if err != nil {
 			return Directory{}, errors.NewFunctionalErrorWithCause("Unknow parent directory", err)
 		}
 	}
 
-	dir := newDirectoryBuilder().
-		withName(req.Name).
-		withParentID(parentID).
-		build()
+	dir := NewDirectoryBuilder().
+		WithName(req.Name).
+		WithParentID(parentID).
+		Build()
 
 	err := fs.metadataStore.SaveDirectory(dir)
 	if err != nil {
