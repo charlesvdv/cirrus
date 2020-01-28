@@ -28,7 +28,7 @@ func (s *Store) GetDirectory(id fs.InodeID) (fs.Directory, error) {
 	}
 
 	if inodeType != inodeTypeDirectory {
-		return fs.Directory{}, fmt.Errorf("Inode '%s' is not a directory")
+		return fs.Directory{}, fmt.Errorf("Inode '%s' is not a directory", id.String())
 	}
 
 	directory := fs.NewDirectoryBuilder().
