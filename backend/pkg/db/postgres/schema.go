@@ -8,11 +8,14 @@ const sqlSchema = `
 	SET TIMEZONE = 'UTC';
 	CREATE SCHEMA cirrus;
 
+	CREATE TYPE inode_type AS ENUM ('file', 'directory');
+
 	CREATE TABLE cirrus.inode (
 		id UUID NOT NULL,
 		parent_id UUID,
 		name TEXT NOT NULL,
 		created_time TIMESTAMP,
+		type inode_type,
 		PRIMARY KEY (id)
 	)
 `

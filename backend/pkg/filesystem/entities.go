@@ -14,6 +14,10 @@ func (i InodeID) String() string {
 	return string(i.id)
 }
 
+func (i InodeID) Binary() []byte {
+	return append([]byte(nil), i.id...)
+}
+
 func generateInodeID() InodeID {
 	id, err := uuid.New().MarshalText()
 	if err != nil {
@@ -31,7 +35,7 @@ func emptyInodeID() InodeID {
 	}
 }
 
-func inodeIDFromString(rawID string) InodeID {
+func InodeIDFromString(rawID string) InodeID {
 	if rawID == "" {
 		return emptyInodeID()
 	}

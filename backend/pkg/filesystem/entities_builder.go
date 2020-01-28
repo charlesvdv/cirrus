@@ -11,27 +11,37 @@ func defaultInodeMetadata() inodeMetadata {
 	}
 }
 
-type directoryBuilder struct {
+type DirectoryBuilder struct {
 	inodeMetadata inodeMetadata
 }
 
-func newDirectoryBuilder() directoryBuilder {
-	return directoryBuilder{
+func NewDirectoryBuilder() DirectoryBuilder {
+	return DirectoryBuilder{
 		inodeMetadata: defaultInodeMetadata(),
 	}
 }
 
-func (b directoryBuilder) withName(name string) directoryBuilder {
-	b.inodeMetadata.name = name
-	return b
-}
-
-func (b directoryBuilder) withParentID(id InodeID) directoryBuilder {
+func (b DirectoryBuilder) WithID(id InodeID) DirectoryBuilder {
 	b.inodeMetadata.id = id
 	return b
 }
 
-func (b directoryBuilder) build() Directory {
+func (b DirectoryBuilder) WithName(name string) DirectoryBuilder {
+	b.inodeMetadata.name = name
+	return b
+}
+
+func (b DirectoryBuilder) WithParentID(id InodeID) DirectoryBuilder {
+	b.inodeMetadata.id = id
+	return b
+}
+
+func (b DirectoryBuilder) WithCreatedTime(time time.Time) DirectoryBuilder {
+	b.inodeMetadata.createdTime = time
+	return b
+}
+
+func (b DirectoryBuilder) Build() Directory {
 	return Directory{
 		inodeMetadata: b.inodeMetadata,
 	}
