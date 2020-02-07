@@ -3,8 +3,8 @@ package files
 import "time"
 
 type DirectoryBuilder interface {
-	WithID(id *ID) MetadataBuilder
-	WithParentID(id *ID) MetadataBuilder
+	WithID(id ID) MetadataBuilder
+	WithParentID(id ID) MetadataBuilder
 	WithName(name string) MetadataBuilder
 	WithCreatedTime(createdTime time.Time) MetadataBuilder
 	BuildDirectory() DirectoryMetadata
@@ -16,8 +16,8 @@ func NewDirectoryBuilder() DirectoryBuilder {
 }
 
 type FileBuilder interface {
-	WithID(id *ID) MetadataBuilder
-	WithParentID(id *ID) MetadataBuilder
+	WithID(id ID) MetadataBuilder
+	WithParentID(id ID) MetadataBuilder
 	WithName(name string) MetadataBuilder
 	WithCreatedTime(createdTime time.Time) MetadataBuilder
 	WithSize(size uint64) MetadataBuilder
@@ -31,8 +31,8 @@ func NewFileBuilder() FileBuilder {
 
 func defaultMetadata() Metadata {
 	return Metadata{
-		id:           nil,
-		parentID:     nil,
+		id:           MustParseID(rootParentID),
+		parentID:     MustParseID(rootParentID),
 		name:         "",
 		createdTime:  time.Now().UTC(),
 		size:         0,
@@ -50,12 +50,12 @@ func NewMetadataBuilder() MetadataBuilder {
 	}
 }
 
-func (b MetadataBuilder) WithID(id *ID) MetadataBuilder {
+func (b MetadataBuilder) WithID(id ID) MetadataBuilder {
 	b.partialMetadata.id = id
 	return b
 }
 
-func (b MetadataBuilder) WithParentID(id *ID) MetadataBuilder {
+func (b MetadataBuilder) WithParentID(id ID) MetadataBuilder {
 	b.partialMetadata.parentID = id
 	return b
 }
