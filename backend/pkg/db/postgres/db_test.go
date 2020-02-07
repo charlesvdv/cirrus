@@ -21,7 +21,7 @@ func TestOpenAndSetupDB(t *testing.T) {
 		User:     "postgres",
 		Password: "password",
 		Host:     "localhost",
-		sslMode:  "disable",
+		SslMode:  "disable",
 	}
 
 	containerEnvs := []string{"POSTGRES_PASSWORD=" + connConfig.Password, "POSTGRES_DB=" + connConfig.DBName}
@@ -34,7 +34,7 @@ func TestOpenAndSetupDB(t *testing.T) {
 	connConfig.Port = uint16(publishedPort)
 
 	err = pool.Retry(func() error {
-		db, err := sql.Open("postgres", formatConnectionString(connConfig))
+		db, err := sql.Open("postgres", FormatConnectionString(connConfig))
 		if err != nil {
 			return err
 		}

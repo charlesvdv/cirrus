@@ -15,11 +15,11 @@ type Config struct {
 	Password string
 	Host     string
 	Port     uint16
-	sslMode  string
+	SslMode  string
 }
 
 func Open(conf Config) (*sql.DB, error) {
-	connStr := formatConnectionString(conf)
+	connStr := FormatConnectionString(conf)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return db, err
@@ -33,14 +33,14 @@ func Open(conf Config) (*sql.DB, error) {
 	return db, nil
 }
 
-func formatConnectionString(conf Config) string {
+func FormatConnectionString(conf Config) string {
 	// TODO: sane default
 	return formatConnectionStringKV("dbname", conf.DBName) +
 		formatConnectionStringKV("user", conf.User) +
 		formatConnectionStringKV("password", conf.Password) +
 		formatConnectionStringKV("host", conf.Host) +
 		formatConnectionStringKV("port", strconv.FormatUint(uint64(conf.Port), 10)) +
-		formatConnectionStringKV("sslmode", conf.sslMode)
+		formatConnectionStringKV("sslmode", conf.SslMode)
 }
 
 func formatConnectionStringKV(key, value string) string {

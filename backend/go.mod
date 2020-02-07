@@ -4,10 +4,12 @@ go 1.13
 
 require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/containerd/continuity v0.0.0-20200107194136-26c1120b8d41 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/google/logger v1.0.1
 	github.com/google/uuid v1.1.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/lib/pq v1.3.0

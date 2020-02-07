@@ -12,11 +12,12 @@ const sqlSchema = `
 
 	CREATE TABLE cirrus.metadata (
 		id UUID NOT NULL,
-		parent_id UUID,
+		parent_id UUID NOT NULL,
 		name TEXT NOT NULL,
 		created_time TIMESTAMP NOT NULL,
 		type metadata_type,
-		PRIMARY KEY (id)
+		PRIMARY KEY (id),
+		UNIQUE (parent_id, name)
 	);
 `
 
