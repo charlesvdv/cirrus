@@ -1,5 +1,10 @@
 # Cirrus
 
+![CI Backend](https://github.com/charlesvdv/cirrus/workflows/CI%20Backend/badge.svg) 
+[![codecov](https://codecov.io/gh/charlesvdv/cirrus/branch/master/graph/badge.svg)](https://codecov.io/gh/charlesvdv/cirrus)
+
+
+
 Cirrus is a modern open source cloud storage solution.
 Currently, the project is still in active development and very much work in progress.
 
