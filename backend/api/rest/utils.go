@@ -18,6 +18,7 @@ func bindRequest(r *http.Request, v interface{}) error {
 
 	err := marshaller.unmarshal(r.Body, v)
 	if err != nil {
+		log.Ctx(r.Context()).Debug().Err(err).Msg("Unmarshal error")
 		return errBadRequestErr(err, "Invalid body")
 	}
 

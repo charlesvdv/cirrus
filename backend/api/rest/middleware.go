@@ -22,6 +22,8 @@ func marshallingMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		w.Header().Add("Content-Type", contentType)
+
 		ctx := context.WithValue(r.Context(), ctxKeyMarshaller, jsonMarshaller{})
 
 		next.ServeHTTP(w, r.WithContext(ctx))

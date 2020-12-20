@@ -8,18 +8,18 @@ import (
 	"github.com/go-chi/chi"
 )
 
-type UserManager interface {
+type UserService interface {
 	Signup(ctx context.Context, info user.SignupInfo) error
 }
 
-func NewUserHandler(service UserManager) UserHandler {
+func NewUserHandler(service UserService) UserHandler {
 	return UserHandler{
 		service: service,
 	}
 }
 
 type UserHandler struct {
-	service UserManager
+	service UserService
 }
 
 func (h UserHandler) register(router *chi.Mux) {

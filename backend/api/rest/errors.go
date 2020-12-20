@@ -44,7 +44,7 @@ type restError struct {
 }
 
 func (e *restError) Error() string {
-	if e.err == nil {
+	if e.err == nil || e.err.Error() == e.Message {
 		return fmt.Sprintf("%s: %s", http.StatusText(e.status), e.Message)
 	}
 	return fmt.Sprintf("%s: %s: %s", http.StatusText(e.status), e.Message, e.err.Error())

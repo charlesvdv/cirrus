@@ -1,5 +1,7 @@
 FROM golang:alpine AS builder
 
+ENV GO111MODULE=on
+
 WORKDIR /build
 
 COPY go.mod go.sum ./
@@ -9,3 +11,8 @@ COPY . .
 
 RUN go build -o cirrus ./cmd
 
+FROM alpine
+COPY --from=builder /build/cirrus /cirrus
+
+EXPOSE 80
+ENTRYPOINT ["/cirrus", "-p", "80"]
