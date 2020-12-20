@@ -9,6 +9,7 @@ on:
     branches: [ master ]
     paths:
       - "backend/**"
+      - ".github/**"
 
 jobs:
   build:
