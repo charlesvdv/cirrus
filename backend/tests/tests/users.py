@@ -12,3 +12,7 @@ class UsersTestCase(IntegrationTestCase):
 
         r = self._client.post('/users/signup', json={'email': 'user-signup-duplicate@example.com', 'password': 'password123'})
         self.assertEqual(r.status_code, 400)
+
+    def test_weak_password(self):
+        r = self._client.post('/users/signup', json={'email': 'user-signup-duplicate@example.com', 'password': '1234'})
+        self.assertEqual(r.status_code, 400)

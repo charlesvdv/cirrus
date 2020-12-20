@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/goware/emailx"
+	"github.com/muesli/crunchy"
 )
 
 type ID = uint64
@@ -14,7 +15,19 @@ type ID = uint64
 type hashedPassword []byte
 
 func newHashedPassword(password string) (hashedPassword, error) {
-	// TODO: validate password complexity
+	if len(password) <= 8 {
+		return hashedPassword{}, errors.New("Password too short")
+	}
+	if len(password) > 64 {
+		return hashedPassword{}, errors.New("Password is too long")
+	}
+	validator := crunchy.NewValidatorWithOpts(crunchy.Options{
+		CheckHIBP: false,
+	})
+	err := validator.Check(password)
+	if err != nil {
+		return hashedPassword{}, err
+	}
 
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -68,5 +81,9 @@ func (u *User) Email() string {
 }
 
 func (u *User) verifyPassword(plaintextPwd string) error {
-	return u.hashedPassword.compareWithPlainText(plaintextPwd)
+	err := u.hashedPassword.compareWithPlainText(plaintextPwd)
+	if err != nil {
+		return errors.New("Password doesn't match")
+	}
+	return nil
 }
