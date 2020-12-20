@@ -1,0 +1,20 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment: 
+      - POSTGRES_DB=cirrus
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  cirrus:
+    build: ..
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_DB=cirrus
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=db
+      - CIRRUS_DATABASE=postgres
