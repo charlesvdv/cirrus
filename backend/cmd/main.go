@@ -10,7 +10,7 @@ import (
 
 	"github.com/charlesvdv/cirrus/backend/api/rest"
 	"github.com/charlesvdv/cirrus/backend/db"
-	"github.com/charlesvdv/cirrus/backend/pkg/user"
+	"github.com/charlesvdv/cirrus/backend/pkg/identity"
 )
 
 func main() {
@@ -64,7 +64,7 @@ func mainApp(conf appConfig) {
 		log.Fatal().Err(err).Msg("Failed to update schema")
 	}
 
-	userService := user.NewUserService(&database, &user.PostgresRepository{})
+	userService := identity.NewUserService(&database, &identity.PostgresRepository{})
 	rootHandler := rest.NewRootHandler()
 	rootHandler.Register(
 		rest.NewUserHandler(&userService),

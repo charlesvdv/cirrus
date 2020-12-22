@@ -1,15 +1,15 @@
-package user
+package identity
 
 import (
 	"github.com/charlesvdv/cirrus/backend/db"
 	"golang.org/x/net/context"
 )
 
-type Repository interface {
+type UserRepository interface {
 	Create(ctx context.Context, tx db.Tx, user User) (User, error)
 }
 
-func NewUserService(txProvider db.TxProvider, repository Repository) UserService {
+func NewUserService(txProvider db.TxProvider, repository UserRepository) UserService {
 	return UserService{
 		txProvider: txProvider,
 		repository: repository,
@@ -18,7 +18,7 @@ func NewUserService(txProvider db.TxProvider, repository Repository) UserService
 
 type UserService struct {
 	txProvider db.TxProvider
-	repository Repository
+	repository UserRepository
 }
 
 type SignupInfo struct {

@@ -1,4 +1,4 @@
-package user
+package identity
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	"github.com/muesli/crunchy"
 )
 
-type ID = uint64
+type UserID = uint64
 
 type hashedPassword []byte
 
@@ -67,12 +67,12 @@ func newSignupUser(rawEmail, rawPassword string) (User, error) {
 }
 
 type User struct {
-	id             ID
+	id             UserID
 	email          email
 	hashedPassword hashedPassword
 }
 
-func (u *User) ID() ID {
+func (u *User) ID() UserID {
 	return u.id
 }
 

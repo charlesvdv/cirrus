@@ -1,4 +1,4 @@
-package user
+package identity
 
 import (
 	"errors"
@@ -17,10 +17,10 @@ type PostgresRepository struct {
 
 func (r *PostgresRepository) Create(ctx context.Context, tx db.Tx, user User) (User, error) {
 	err := tx.(db.PostgresTx).QueryRow(ctx, `
-		INSERT INTO usermgt.user
+		INSERT INTO identity.user
 		(email, password)
 		VALUES($1, $2)
-		RETURNING id
+		RETURNING user_id
 	`, user.Email(), string(user.hashedPassword)).Scan(&user.id)
 	if err != nil {
 		var pgErr *pgconn.PgError

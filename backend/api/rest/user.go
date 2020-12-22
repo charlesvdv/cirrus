@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/charlesvdv/cirrus/backend/pkg/user"
+	"github.com/charlesvdv/cirrus/backend/pkg/identity"
 	"github.com/go-chi/chi"
 )
 
 type UserService interface {
-	Signup(ctx context.Context, info user.SignupInfo) error
+	Signup(ctx context.Context, info identity.SignupInfo) error
 }
 
 func NewUserHandler(service UserService) UserHandler {
@@ -43,7 +43,7 @@ func (h UserHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.Signup(r.Context(), user.SignupInfo{
+	err = h.service.Signup(r.Context(), identity.SignupInfo{
 		Email:    createUserRequest.Email,
 		Password: createUserRequest.Password,
 	})
