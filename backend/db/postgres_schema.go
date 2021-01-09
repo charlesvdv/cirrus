@@ -1,10 +1,12 @@
 package db
 
 const postgresSchema = `
-	CREATE SCHEMA usermgt;
+	SET TIME ZONE 'UTC';
 
-	CREATE TABLE usermgt.user (
-		id SERIAL PRIMARY KEY,
+	CREATE SCHEMA identity;
+
+	CREATE TABLE identity.user (
+		user_id SERIAL PRIMARY KEY,
 		email TEXT UNIQUE,
 		password TEXT
 	);

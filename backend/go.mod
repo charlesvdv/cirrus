@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgx/v4 v4.10.0
-	github.com/muesli/crunchy v0.4.0 // indirect
+	github.com/muesli/crunchy v0.4.0
 	github.com/rs/zerolog v1.20.0
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

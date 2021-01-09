@@ -2,9 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -66,7 +69,7 @@ func (db *PostgresDatabase) UpdateSchemas() error {
 func (db *PostgresDatabase) BeginTx(ctx context.Context) (Tx, error) {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
-		return PostgresTx{}, err
+		return PostgresTx{}, TxError{err: err}
 	}
 
 	return PostgresTx{
@@ -75,15 +78,57 @@ func (db *PostgresDatabase) BeginTx(ctx context.Context) (Tx, error) {
 	}, nil
 }
 
+func (db *PostgresDatabase) WithTransaction(ctx context.Context, txFn func(Tx) error) error {
+	tx, err := db.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = txFn(tx)
+	if err != nil {
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			log.Ctx(ctx).Debug().Err(err).AnErr("rollback error", rollbackErr).Msg("Failed to rollback")
+		}
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type PostgresTx struct {
 	pgx.Tx
 	context context.Context
 }
 
 func (tx PostgresTx) Commit() error {
-	return tx.Tx.Commit(tx.context)
+	err := tx.Tx.Commit(tx.context)
+	if err != nil {
+		return TxError{err: err}
+	}
+	return nil
 }
 
 func (tx PostgresTx) Rollback() error {
-	return tx.Tx.Rollback(tx.context)
+	err := tx.Tx.Rollback(tx.context)
+	if err != nil {
+		return TxError{err: err}
+	}
+	return nil
+}
+
+func ConvertPostgresError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == pgerrcode.UniqueViolation {
+			return DuplicateError{err: err}
+		}
+	}
+
+	return err
 }
