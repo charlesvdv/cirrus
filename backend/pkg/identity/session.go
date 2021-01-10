@@ -29,6 +29,10 @@ func (t Token) ExpiredAt() time.Time {
 	return t.expiredAt
 }
 
+func (t Token) IsExpired() bool {
+	return time.Now().UTC().After(t.expiredAt)
+}
+
 func generateAccessToken() (Token, error) {
 	return generateToken(accessTokenExpirationTime)
 }
@@ -45,7 +49,7 @@ func generateToken(expiration time.Duration) (Token, error) {
 
 	return Token{
 		value:     token,
-		expiredAt: time.Now().Add(expiration),
+		expiredAt: time.Now().UTC().Add(expiration),
 	}, nil
 }
 

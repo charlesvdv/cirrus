@@ -49,16 +49,17 @@ func (r *SessionRepositoryPostgres) CreateRefreshToken(ctx context.Context, tx d
 	return r.createToken(ctx, tx, clientID, token, "refresh")
 }
 
-func (r *SessionRepositoryPostgres) GetUserIDFromAccessToken(ctx context.Context, tx db.Tx, token string) (UserID, error) {
+func (r *SessionRepositoryPostgres) GetUserIDFromAccessToken(ctx context.Context, tx db.Tx, tokenValue string) (UserID, Token, error) {
 	var userID UserID
+	var token Token
 	err := tx.(db.PostgresTx).QueryRow(ctx, `
-		SELECT c.user_id
+		SELECT c.user_id, t.value, t.expired_at
 		FROM identity.auth_client AS c
 		INNER JOIN identity.client_token AS t ON (c.auth_client_id = t.auth_client_id)
 		WHERE t.value = $1 AND t.type = 'access'
-	`, token).Scan(&userID)
+	`, tokenValue).Scan(&userID, &token.value, &token.expiredAt)
 
-	return userID, err
+	return userID, token, err
 }
 
 func (r *SessionRepositoryPostgres) createToken(ctx context.Context, tx db.Tx, clientID uint64, token Token, clientType string) (Token, error) {

@@ -16,7 +16,7 @@ type SessionRepository interface {
 	DeleteTokensWithClientID(ctx context.Context, tx db.Tx, clientID uint64) error
 	CreateAccessToken(ctx context.Context, tx db.Tx, clientID uint64, token Token) (Token, error)
 	CreateRefreshToken(ctx context.Context, tx db.Tx, clientID uint64, token Token) (Token, error)
-	GetUserIDFromAccessToken(ctx context.Context, tx db.Tx, token string) (UserID, error)
+	GetUserIDFromAccessToken(ctx context.Context, tx db.Tx, token string) (UserID, Token, error)
 }
 
 type SessionUserFetcher interface {
@@ -49,21 +49,25 @@ type AuthenticationTokens struct {
 	ClientReference string
 }
 
-func (s *SessionService) CheckBearerToken(ctx context.Context, token string) (UserID, error) {
-	log.Ctx(ctx).Debug().Msg("CAlled!")
+func (s *SessionService) CheckBearerToken(ctx context.Context, tokenValue string) (UserID, error) {
 	var userID UserID
+	var token Token
 	err := s.txProvider.WithTransaction(ctx, func(tx db.Tx) error {
 		var err error
-		userID, err = s.repository.GetUserIDFromAccessToken(ctx, tx, token)
+		userID, token, err = s.repository.GetUserIDFromAccessToken(ctx, tx, tokenValue)
 		return err
 	})
 	if err != nil {
 		if db.IsErrNoRows(err) {
-			log.Ctx(ctx).Debug().Msg("no rows!")
 			return userID, ErrUnauthorized
 		}
 		log.Ctx(ctx).Warn().Err(err).Msg("Check bearer token failed")
 		return userID, ErrInternal
+	}
+
+	if token.IsExpired() {
+		log.Ctx(ctx).Warn().Msg("Usage of expired access token")
+		return userID, ErrUnauthorized
 	}
 
 	return userID, nil
