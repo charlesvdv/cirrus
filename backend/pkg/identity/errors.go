@@ -6,4 +6,6 @@ var (
 	ErrInternal                  = errors.New("Internal error")
 	ErrInvalidUsernameOrPassword = errors.New("Invalid user name or password")
 	ErrUserAlreadyExists         = errors.New("User already exists")
+	ErrUnauthorized              = errors.New("Unauthorized")
+	ErrUserNoLongerExists        = errors.New("User no longer exists")
 )

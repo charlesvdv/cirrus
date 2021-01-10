@@ -1,8 +1,6 @@
 package identity
 
 import (
-	"errors"
-
 	"github.com/charlesvdv/cirrus/backend/db"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
@@ -10,6 +8,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, tx db.Tx, user User) (User, error)
+	GetUserWithID(ctx context.Context, tx db.Tx, userID UserID) (User, error)
 }
 
 func NewUserService(txProvider db.TxProvider, repository UserRepository) UserService {
@@ -44,8 +43,7 @@ func (s *UserService) Signup(ctx context.Context, info SignupInfo) error {
 		return nil
 	})
 	if err != nil {
-		var dupErr db.DuplicateError
-		if errors.As(err, &dupErr) {
+		if db.IsErrDuplicate(err) {
 			return ErrUserAlreadyExists
 		}
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to create user")
@@ -53,4 +51,22 @@ func (s *UserService) Signup(ctx context.Context, info SignupInfo) error {
 	}
 
 	return nil
+}
+
+func (s *UserService) GetUser(ctx context.Context, userID UserID) (User, error) {
+	var user User
+	err := s.txProvider.WithTransaction(ctx, func(tx db.Tx) error {
+		var err error
+		user, err = s.repository.GetUserWithID(ctx, tx, userID)
+		if err != nil {
+			if db.IsErrNoRows(err) {
+				return ErrUserNoLongerExists
+			}
+			log.Ctx(ctx).Warn().Uint64("user-id", userID).Err(err).Msg("Failed to retrieve user")
+			return ErrInternal
+		}
+		return nil
+	})
+
+	return user, err
 }

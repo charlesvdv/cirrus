@@ -32,6 +32,7 @@ def main():
 def suite(loader: testutils.IntegrationTestLoader) -> unittest.TestSuite:
     suite = unittest.TestSuite()
     suite.addTest(loader.loadTestsFromTestCase(tests.UsersTestCase))
+    suite.addTest(loader.loadTestsFromTestCase(tests.UserSessionTestCase))
     return suite
 
 

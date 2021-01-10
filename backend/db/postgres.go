@@ -2,12 +2,9 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -120,15 +117,4 @@ func (tx PostgresTx) Rollback() error {
 		return TxError{err: err}
 	}
 	return nil
-}
-
-func ConvertPostgresError(err error) error {
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		if pgErr.Code == pgerrcode.UniqueViolation {
-			return DuplicateError{err: err}
-		}
-	}
-
-	return err
 }
