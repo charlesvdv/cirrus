@@ -7,21 +7,27 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func NewRootHandler() RootHandler {
+func NewRootHandler() *RootHandler {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
-	router.Use(AttachRequestIDInLogger)
+	router.Use(attachRequestIDInLogger)
+	router.Use(middleware.Recoverer)
 
 	router.Get("/health", health)
 
-	return RootHandler{
+	return &RootHandler{
 		router: router,
 	}
 }
 
+type handlerContext struct {
+	authMiddleware func(http.Handler) http.Handler
+}
+
 type RootHandler struct {
-	router *chi.Mux
+	router     *chi.Mux
+	handlerCtx handlerContext
 }
 
 func (h RootHandler) Get() http.Handler {
@@ -29,12 +35,17 @@ func (h RootHandler) Get() http.Handler {
 }
 
 type CustomHandler interface {
-	register(router *chi.Mux)
+	register(router *chi.Mux, ctx handlerContext)
 }
 
-func (h RootHandler) Register(handlers ...CustomHandler) {
+func (h *RootHandler) WithTokenBearerChecker(fn CheckBearerTokenFn) *RootHandler {
+	h.handlerCtx.authMiddleware = authMiddleware(fn)
+	return h
+}
+
+func (h *RootHandler) Register(handlers ...CustomHandler) {
 	for index := range handlers {
-		handlers[index].register(h.router)
+		handlers[index].register(h.router, h.handlerCtx)
 	}
 }
 

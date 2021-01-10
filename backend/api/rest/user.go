@@ -10,6 +10,7 @@ import (
 
 type UserService interface {
 	Signup(ctx context.Context, info identity.SignupInfo) error
+	GetUser(ctx context.Context, userID identity.UserID) (identity.User, error)
 }
 
 func NewUserHandler(service UserService) UserHandler {
@@ -22,11 +23,12 @@ type UserHandler struct {
 	service UserService
 }
 
-func (h UserHandler) register(router *chi.Mux) {
+func (h UserHandler) register(router *chi.Mux, ctx handlerContext) {
 	router.Route("/users", func(r chi.Router) {
 		r.Use(marshallingMiddleware)
 
 		r.Post("/", h.createUser)
+		r.With(ctx.authMiddleware).Get("/", h.getUserInfo)
 	})
 }
 
@@ -48,9 +50,24 @@ func (h UserHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		Password: createUserRequest.Password,
 	})
 	if err != nil {
-		renderError(r.Context(), w, errBusinessLogic(err))
+		renderError(r.Context(), w, convertIdentityErr(err))
 		return
 	}
 
 	renderNoContent(r.Context(), w)
+}
+
+type userInfoResponse struct {
+	Email string `json:"email"`
+}
+
+func (h UserHandler) getUserInfo(w http.ResponseWriter, r *http.Request) {
+	user, err := h.service.GetUser(r.Context(), getUserID(r.Context()))
+	if err != nil {
+		renderError(r.Context(), w, convertIdentityErr(err))
+	}
+
+	render(r.Context(), w, userInfoResponse{
+		Email: user.Email(),
+	})
 }

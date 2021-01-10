@@ -64,10 +64,18 @@ func mainApp(conf appConfig) {
 		log.Fatal().Err(err).Msg("Failed to update schema")
 	}
 
-	userService := identity.NewUserService(&database, &identity.PostgresRepository{})
-	rootHandler := rest.NewRootHandler()
+	userRepository := &identity.UserRepositoryPostgres{}
+	sessionRepository := &identity.SessionRepositoryPostgres{}
+
+	userService := identity.NewUserService(&database, userRepository)
+	sessionService := identity.NewSessionService(&database, sessionRepository, userRepository)
+
+	rootHandler := rest.NewRootHandler().
+		WithTokenBearerChecker(sessionService.CheckBearerToken)
+
 	rootHandler.Register(
 		rest.NewUserHandler(&userService),
+		rest.NewSessionHandler(&sessionService),
 	)
 
 	address := fmt.Sprintf("%v:%v", conf.hostname, conf.port)

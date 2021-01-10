@@ -1,15 +1,41 @@
 package rest
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/charlesvdv/cirrus/backend/pkg/identity"
 )
+
+func convertIdentityErr(err error) *restError {
+	if errors.Is(err, identity.ErrInternal) {
+		return &restError{
+			err:     err,
+			Message: err.Error(),
+			status:  http.StatusInternalServerError,
+		}
+	}
+	if errors.Is(err, identity.ErrUnauthorized) {
+		return errUnauthorized(err)
+	}
+
+	return errBusinessLogic(err)
+}
 
 func errBusinessLogic(err error) *restError {
 	return &restError{
 		err:     err,
 		Message: err.Error(),
 		status:  http.StatusBadRequest,
+	}
+}
+
+func errUnauthorized(err error) *restError {
+	return &restError{
+		err:     err,
+		Message: "Unauthorized",
+		status:  http.StatusUnauthorized,
 	}
 }
 
