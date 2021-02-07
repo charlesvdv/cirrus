@@ -1,0 +1,31 @@
+name: openapi
+
+on:
+  push:
+    paths:
+      - "api/**"
+      - ".github/**"
+  pull_request:
+    paths:
+      - "api/**"
+      - ".github/**"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-node@v2
+
+    - name: Install swagger-cli
+      run: sudo npm install -g swagger-cli
+
+    - name: Check if API definition is valid
+      run: ./openapi-toolbox validate
+      working-directory: api
+
+    - name: Check if API definition is up-to-date
+      run: ./openapi-toolbox generate && git diff --exit-code openapi.json
+      working-directory: api
