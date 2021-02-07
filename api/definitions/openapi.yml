@@ -1,0 +1,29 @@
+openapi: '3.0.2'
+
+info:
+  title: cirrus API
+  version: '1.0'
+
+tags:
+  - name: users
+    description: User management
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Error:
+      $ref: error.yml#/schemas/Error
+    CreateUserRequest:
+      $ref: users.yml#/schemas/CreateUserRequest
+    User:
+      $ref: users.yml#/schemas/User
+
+security:
+  - BearerAuth: []
+
+paths:
+  /users:
+    $ref: users.yml#/paths

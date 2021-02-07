@@ -1,0 +1,14 @@
+schemas:
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+
+errorResponse:
+  description: Error
+  content:
+    application/json:
+      schema:
+        $ref: 'openapi.yml#/components/schemas/Error'
+

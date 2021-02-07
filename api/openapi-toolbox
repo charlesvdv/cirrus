@@ -1,0 +1,38 @@
+#/usr/bin/env bash
+
+set -e -o pipefail
+
+api_dir=$(dirname "$0")
+api_file="${api_dir}/definitions/openapi.yml"
+bundle_format="json"
+api_bundle_file="${api_dir}/openapi.${bundle_format}"
+
+usage() {
+    local script_name=$(basename $0)
+    echo "Invalid argument. Expecting one of: 
+    ${script_name} generate
+    ${script_name} validate"
+}
+
+if [ $# -ne 1 ]; then
+    usage
+    exit 1
+fi
+
+validate_openapi() {
+    swagger-cli validate ${api_file}
+}
+
+generate_openapi() {
+    swagger-cli bundle -f json -o $1 ${api_file}
+}
+
+if [ $1 = "generate" ]; then
+    validate_openapi
+    generate_openapi ${api_bundle_file}
+elif [ $1 = "validate" ]; then
+    validate_openapi
+else
+    usage
+    exit 1
+fi

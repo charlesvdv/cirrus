@@ -1,0 +1,49 @@
+schemas:
+  CreateUserRequest:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+
+paths:
+  get:
+    description: Get own user info
+    tags:
+      - users
+    responses:
+      '200':
+        description: Successfully retrieve the user own information
+        content:
+          application/json:
+            schema:
+              $ref: 'openapi.yml#/components/schemas/User'
+      default:
+        $ref: 'error.yml#/errorResponse'
+  post:
+    description: Create a new user
+    tags:
+      - users
+    # Avoid a chicken-egg problem
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: 'openapi.yml#/components/schemas/CreateUserRequest'
+    responses:
+      '200':
+        description: User successfully created
+      default:
+        $ref: 'error.yml#/errorResponse'
+
