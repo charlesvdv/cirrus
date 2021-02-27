@@ -8,12 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSqliteMigration(t *testing.T) {
+func TestMigration(t *testing.T) {
 	sqlite.NewTestDatabase()
 }
 
-func TestSqliteTxCommit(t *testing.T) {
+func TestTxCommit(t *testing.T) {
 	db := sqlite.NewTestDatabase()
+	defer db.Close()
 
 	tx, err := db.BeginTx(context.Background())
 	require.NoError(t, err)
@@ -22,8 +23,37 @@ func TestSqliteTxCommit(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestSqliteTxRollback(t *testing.T) {
+func TestTxRollbackAfterCommit(t *testing.T) {
 	db := sqlite.NewTestDatabase()
+	defer db.Close()
+
+	tx, err := db.BeginTx(context.Background())
+	require.NoError(t, err)
+
+	err = tx.Commit()
+	require.NoError(t, err)
+
+	err = tx.Rollback()
+	require.NoError(t, err)
+}
+
+func TestTxCommitAfterRollback(t *testing.T) {
+	db := sqlite.NewTestDatabase()
+	defer db.Close()
+
+	tx, err := db.BeginTx(context.Background())
+	require.NoError(t, err)
+
+	err = tx.Rollback()
+	require.NoError(t, err)
+
+	err = tx.Commit()
+	require.Error(t, err)
+}
+
+func TestTxRollback(t *testing.T) {
+	db := sqlite.NewTestDatabase()
+	defer db.Close()
 
 	tx, err := db.BeginTx(context.Background())
 	require.NoError(t, err)

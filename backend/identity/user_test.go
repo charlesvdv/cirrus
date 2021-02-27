@@ -18,6 +18,7 @@ func TestIntegration(t *testing.T) {
 
 	repository := sqlite.IdentityRepository{}
 	db := sqlite.NewTestDatabase()
+	defer db.Close()
 
 	userService := identity.NewUserService(db, repository)
 
