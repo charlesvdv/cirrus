@@ -6,6 +6,7 @@ import (
 
 	cirrus "github.com/charlesvdv/cirrus/backend"
 	"github.com/charlesvdv/cirrus/backend/database"
+	"github.com/rs/zerolog/log"
 )
 
 // UserService implements the user management with persistence
@@ -22,14 +23,26 @@ func NewUserService(db database.TxProvider, repository Repository) UserService {
 	}
 }
 
+// UserCreatedCallback defines a callback that is called when the user has been created.
+// The transaction passed should be used to create any other persistent changes. Don't commit nor
+// rollback the transaction.
+// If an error is returned, the user creation will be rollbacked as well.
+type UserCreatedCallback func(ctx context.Context, tx database.Tx, user cirrus.User) error
+
 // CreateUser creates a user
-func (s UserService) CreateUser(ctx context.Context, user *cirrus.User) (err error) {
+func (s UserService) CreateUser(ctx context.Context, user *cirrus.User, callback UserCreatedCallback) (err error) {
 	user.CreatedAt = time.Now().UTC()
 
 	err = s.db.WithTransaction(ctx, func(tx database.Tx) error {
-		return s.repository.CreateUser(tx, user)
+		err = s.repository.CreateUser(tx, user)
+		if err != nil {
+			return err
+		}
+
+		return callback(ctx, tx, *user)
 	})
 	if err != nil {
+		log.Ctx(ctx).Err(err).Msg("failed to create user")
 		return cirrus.Errorf(cirrus.ErrCodeInternal, "create user")
 	}
 

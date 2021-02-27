@@ -6,6 +6,7 @@ import (
 	"time"
 
 	cirrus "github.com/charlesvdv/cirrus/backend"
+	"github.com/charlesvdv/cirrus/backend/database"
 	"github.com/charlesvdv/cirrus/backend/database/sqlite"
 	"github.com/charlesvdv/cirrus/backend/identity"
 	"github.com/stretchr/testify/require"
@@ -29,8 +30,16 @@ func TestIntegration(t *testing.T) {
 
 func integrationTestCreateUser(t *testing.T, service identity.UserService) {
 	var user cirrus.User
-	err := service.CreateUser(context.Background(), &user)
+
+	var callbackUserID cirrus.UserID
+	userCallback := func(ctx context.Context, tx database.Tx, user cirrus.User) error {
+		callbackUserID = user.ID
+		return nil
+	}
+
+	err := service.CreateUser(context.Background(), &user, userCallback)
 	require.NoError(t, err)
 	require.NotEmpty(t, user.ID)
 	require.WithinDuration(t, time.Now(), user.CreatedAt, 5*time.Second)
+	require.Equal(t, user.ID, callbackUserID)
 }

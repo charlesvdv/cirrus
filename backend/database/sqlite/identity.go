@@ -24,7 +24,7 @@ func (ir IdentityRepository) CreateUser(_tx database.Tx, user *cirrus.User) erro
 		return formatError(err)
 	}
 
-	user.ID = strconv.FormatInt(tx.LastInsertRowID(), 10)
+	user.ID = cirrus.UserID(strconv.FormatInt(tx.LastInsertRowID(), 10))
 
 	return nil
 }
