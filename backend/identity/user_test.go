@@ -12,11 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
+func TestUserService(t *testing.T) {
 	repository := sqlite.IdentityRepository{}
 	db := sqlite.NewTestDatabase()
 	defer db.Close()

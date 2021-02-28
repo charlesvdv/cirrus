@@ -14,8 +14,25 @@ import (
 
 const schema = `
 CREATE TABLE users (
-	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	created_at TEXT NOT NULL
+);
+
+CREATE TABLE user_filesystems (
+	user_id INTEGER NOT NULL REFERENCES users (id),
+	directory_root_id INTEGER NOT NULL REFERENCES directories (id),
+	PRIMARY KEY (user_id, directory_root_id)
+);
+
+CREATE TABLE directories (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	parent_id INTEGER REFERENCES directories (id),
+	name TEXT NOT NULL
+);
+
+CREATE TABLE files (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	parent_id INTEGER NOT NULL REFERENCES directories (id)
 );
 `
 
