@@ -1,6 +1,6 @@
 module github.com/charlesvdv/cirrus/backend
 
-go 1.15
+go 1.16
 
 require (
 	crawshaw.io/sqlite v0.3.2
