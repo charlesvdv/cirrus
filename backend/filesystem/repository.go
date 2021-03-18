@@ -7,5 +7,7 @@ import (
 
 // Repository describes the interface to the persistence layer.
 type Repository interface {
-	CreateFilesystem(tx database.Tx, userID cirrus.UserID) error
+	CreateDirectory(tx database.Tx, directory *cirrus.Directory) error
+	ListDirectoryContent(tx database.Tx, ownerID cirrus.UserID, parent *cirrus.ObjectID) ([]cirrus.FilesystemObject, error)
+	ResolvePath(tx database.Tx, ownerID cirrus.UserID, path cirrus.Path) ([]cirrus.FilesystemObject, error)
 }

@@ -5,6 +5,10 @@ import "fmt"
 const (
 	// ErrCodeInternal describes an internal error
 	ErrCodeInternal = "internal"
+	// ErrCodeInvalidInput describes an invalid input provided by the user
+	ErrCodeInvalidInput = "invalid"
+	// ErrCodeAlreadyExist is returned when a resource already exist.
+	ErrCodeAlreadyExist = "already-exist"
 )
 
 // Error describes a business logic error

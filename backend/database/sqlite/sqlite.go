@@ -2,12 +2,14 @@ package sqlite
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 
 	"github.com/charlesvdv/cirrus/backend/database"
 	"github.com/rs/zerolog/log"
 
+	"crawshaw.io/sqlite"
 	driver "crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 )
@@ -18,21 +20,21 @@ CREATE TABLE users (
 	created_at TEXT NOT NULL
 );
 
-CREATE TABLE user_filesystems (
-	user_id INTEGER NOT NULL REFERENCES users (id),
-	directory_root_id INTEGER NOT NULL REFERENCES directories (id),
-	PRIMARY KEY (user_id, directory_root_id)
-);
-
 CREATE TABLE directories (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	parent_id INTEGER REFERENCES directories (id),
-	name TEXT NOT NULL
+	owner_id INTEGER NOT NULL REFERENCES users (id),
+	name TEXT NOT NULL,
+	created_at TEXT NOT NULL
 );
+
+CREATE UNIQUE INDEX directories_name_idx
+ON directories (owner_id, COALESCE(parent_id, 0), name);
 
 CREATE TABLE files (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	parent_id INTEGER NOT NULL REFERENCES directories (id)
+	parent_id INTEGER NOT NULL REFERENCES directories (id),
+	owner_id INTEGER NOT NULL REFERENCES users (id)
 );
 `
 
@@ -184,6 +186,15 @@ func getTx(tx database.Tx) *Tx {
 func formatError(err error) error {
 	if err == nil {
 		return nil
+	}
+
+	log.Warn().Err(err).Msg("got a sqlite error")
+
+	var sqliteErr sqlite.Error
+	if errors.As(err, &sqliteErr) {
+		if sqliteErr.Code == sqlite.SQLITE_CONSTRAINT_UNIQUE {
+			return database.ErrDuplicate
+		}
 	}
 
 	return database.ErrInternal
