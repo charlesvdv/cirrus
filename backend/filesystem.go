@@ -1,7 +1,6 @@
 package cirrus
 
 import (
-	"context"
 	"strings"
 	"time"
 )
@@ -59,10 +58,4 @@ func (d Directory) fsObject() {}
 func IsDirectory(obj FilesystemObject) bool {
 	_, ok := obj.(Directory)
 	return ok
-}
-
-// Filesystem describes the operation that can be made on filesystem.
-type Filesystem interface {
-	List(ctx context.Context, path Path) ([]FilesystemObject, error)
-	MakeDirectory(ctx context.Context, directory *Directory) error
 }
