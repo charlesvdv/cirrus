@@ -7,7 +7,7 @@ async fn main() {
         host: String::from("127.0.0.1"),
         port: 8000,
     };
-    let app = App::new(&config);
+    let app = App::new(&config).unwrap();
 
     println!("Listening on {}:{}...", config.host, config.port);
     app.run().await.unwrap();

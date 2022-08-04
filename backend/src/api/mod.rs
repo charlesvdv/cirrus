@@ -1,5 +1,12 @@
-pub fn build_router() -> axum::Router {
-    let router = axum::Router::new();
+use axum::{Router, routing::get, http::StatusCode};
 
-    router
+pub fn build_api_router() -> Router {
+    let api_routes = Router::new()
+        .route("/health", get(health_handler));
+
+    Router::new().nest("/api", api_routes)
+}
+
+async fn health_handler() -> StatusCode {
+    StatusCode::OK
 }
