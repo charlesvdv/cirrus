@@ -5,8 +5,11 @@ edition = "2021"
 
 [dependencies]
 axum = "0.5"
+axum-extra = { version = "0.3", features = ["spa"] }
 hyper = { version = "0.14", features = ["full"] }
 tokio = { version = "1.20", features = ["full"] }
 tower = "0.4"
 anyhow = "1.0"
 reqwest = { version = "0.11", features = ["rustls", "json"], default-features = false }
+dotenv = "0.15.0"
+lazy_static = "1.4"

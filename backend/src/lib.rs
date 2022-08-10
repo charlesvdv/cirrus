@@ -13,7 +13,8 @@ pub struct App {
 
 impl App {
     pub fn new(config: &Config) -> anyhow::Result<App> {
-        let router = api::build_api_router();
+        let ui_assets_path = std::path::Path::new(&config.ui_assets_path);
+        let router = api::build_api_router(ui_assets_path);
 
         let address = format!("{}:{}", config.host, config.port);
         let listener = TcpListener::bind(&address)?;
@@ -25,7 +26,7 @@ impl App {
     }
 
     pub fn port(&self) -> u16 {
-        return self.port;
+        self.port
     }
 
     pub async fn run(self) -> anyhow::Result<()> {
