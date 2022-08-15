@@ -1,3 +1,4 @@
+use cirrus_backend::DatabaseConfig;
 use clap::Parser;
 use dotenv::dotenv;
 
@@ -23,9 +24,12 @@ async fn main() {
         host: String::from("127.0.0.1"),
         port: cli.port.unwrap_or(8000),
         ui_assets_path: String::from("/path"),
+        database: DatabaseConfig {
+            url: std::env::var("DATABASE_URL").unwrap_or(String::from("cirrus.sqlite")),
+        }
     };
 
-    let app = App::new(&config).unwrap();
+    let app = App::new(&config).await.unwrap();
 
     println!("Listening on {}:{}...", config.host, config.port);
     app.run().await.unwrap();
