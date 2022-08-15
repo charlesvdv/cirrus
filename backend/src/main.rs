@@ -1,5 +1,5 @@
+use clap::Parser;
 use dotenv::dotenv;
-use clap::{Subcommand, Parser};
 
 use cirrus_backend::App;
 use cirrus_backend::Config;
@@ -8,18 +8,9 @@ use cirrus_backend::Config;
 #[clap(name = "cirrus", version, about)]
 #[clap(propagate_version = true)]
 struct Cli {
-    #[clap(subcommand)]
-    command: Option<Commands>,
-
     /// Specify port exposed
     #[clap(short, long)]
     port: Option<u16>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Initialize cirrus
-    Init{},
 }
 
 #[tokio::main]
@@ -34,18 +25,6 @@ async fn main() {
         ui_assets_path: String::from("/path"),
     };
 
-    match &cli.command {
-        Some(Commands::Init{}) => init(&config).await,
-        None => run(&config).await,
-    }
-
-}
-
-async fn init(config: &Config) {
-
-}
-
-async fn run(config: &Config) {
     let app = App::new(&config).unwrap();
 
     println!("Listening on {}:{}...", config.host, config.port);
