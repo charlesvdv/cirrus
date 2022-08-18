@@ -25,7 +25,7 @@ async fn main() {
         port: cli.port.unwrap_or(8000),
         ui_assets_path: String::from("/path"),
         database: DatabaseConfig {
-            url: std::env::var("DATABASE_URL").unwrap_or(String::from("cirrus.sqlite")),
+            url: std::env::var("DATABASE_URL").unwrap_or(String::from("sqlite:cirrus.sqlite")),
         }
     };
 

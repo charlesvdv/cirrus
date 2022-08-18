@@ -1,8 +1,8 @@
-mod helpers;
+mod common;
 
 #[tokio::test]
 async fn app_starts_correctly() {
-    let app = helpers::spawn_app().await;
+    let app = common::spawn_app().await;
 
     let response = reqwest::get(&format!("{}/api/health", app.address))
         .await

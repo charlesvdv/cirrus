@@ -1,11 +1,10 @@
-use cirrus_backend::{Config, App, DatabaseConfig};
+use cirrus_backend::{App, Config, DatabaseConfig};
 
 pub struct TestApp {
     pub address: String,
 }
 
-impl TestApp {
-}
+impl TestApp {}
 
 pub async fn spawn_app() -> TestApp {
     let config = Config {
@@ -13,8 +12,8 @@ pub async fn spawn_app() -> TestApp {
         port: 0,
         ui_assets_path: String::from(""),
         database: DatabaseConfig {
-            url: String::from(":memory:"),
-        }
+            url: String::from("sqlite::memory:"),
+        },
     };
 
     let app = App::new(&config).await.unwrap();
