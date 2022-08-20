@@ -3,6 +3,7 @@ use std::{net::TcpListener, str::FromStr};
 
 pub mod api;
 mod config;
+pub mod identity;
 pub mod instance;
 
 pub use config::*;

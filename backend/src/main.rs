@@ -22,7 +22,7 @@ async fn main() {
 
     let config = Config {
         host: String::from("127.0.0.1"),
-        port: cli.port.unwrap_or(8000),
+        port: cli.port.unwrap_or(3100),
         ui_assets_path: String::from("/path"),
         database: DatabaseConfig {
             url: std::env::var("DATABASE_URL").unwrap_or(String::from("sqlite:cirrus.sqlite")),

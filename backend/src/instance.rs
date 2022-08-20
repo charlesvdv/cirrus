@@ -12,6 +12,10 @@ impl Instance {
     pub fn is_initialized(&self) -> bool {
         self.is_initialized
     }
+
+    pub fn mark_as_initialized(&mut self) {
+        self.is_initialized = true;
+    }
 }
 
 pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance, sqlx::Error> {
@@ -39,7 +43,7 @@ pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance, sqlx::Er
     }
 }
 
-pub async fn update<'a>(
+pub async fn update(
     conn: &mut sqlx::SqliteConnection,
     instance: &Instance,
 ) -> Result<(), sqlx::Error> {
