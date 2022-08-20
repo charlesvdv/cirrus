@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js"
+import { Link } from "@solidjs/router";
 
 import Logo from './Logo'
 
@@ -11,10 +12,10 @@ export default () => {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16">
             <div class="flex">
-              <div class="flex-shrink-0 flex items-center space-x-2">
+              <Link href="/" class="flex items-center space-x-2 flex-shrink-0">
                 <Logo class="block h-10 w-auto fill-primary" />
                 <div class="text-lg font-semibold text-primary">cirrus</div>
-              </div>
+              </Link>
               <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {/* TODO: uncomment this when menu is needed */}
                 {/* <a href="#" class="border-primary text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"> Dashboard </a>

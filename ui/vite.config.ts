@@ -5,9 +5,12 @@ export default defineConfig({
   plugins: [solidPlugin()],
   server: {
     port: 3000,
-    // Required if vite is behind HTTP proxy
-    // See https://vitejs.dev/config/server-options.html#server-hmr for more info.
-    hmr: { port: 3000 },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3100',
+        changeOrigin: true,
+      }
+    }
   },
   build: {
     target: 'esnext',

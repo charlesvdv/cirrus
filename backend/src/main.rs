@@ -18,6 +18,8 @@ struct Cli {
 async fn main() {
     dotenv().ok();
 
+    tracing_subscriber::fmt::init();
+
     let cli = Cli::parse();
 
     let config = Config {
@@ -26,7 +28,7 @@ async fn main() {
         ui_assets_path: String::from("/path"),
         database: DatabaseConfig {
             url: std::env::var("DATABASE_URL").unwrap_or(String::from("sqlite:cirrus.sqlite")),
-        }
+        },
     };
 
     let app = App::new(&config).await.unwrap();

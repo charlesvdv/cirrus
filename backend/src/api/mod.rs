@@ -4,6 +4,7 @@ use axum::{
     Extension, Router,
 };
 use sqlx::SqlitePool;
+use tower_http::trace::TraceLayer;
 
 use self::ui::spa_router;
 
@@ -20,7 +21,8 @@ pub fn build_api_router(ui_assets_path: &std::path::Path, db_pool: SqlitePool) -
         .route("/health", get(health_handler))
         .route("/instance", get(instance::instance_get))
         .route("/instance/init", post(instance::instance_init))
-        .layer(Extension(db_pool));
+        .layer(Extension(db_pool))
+        .layer(TraceLayer::new_for_http());
 
     Router::new()
         .merge(spa_router(ui_assets_path))

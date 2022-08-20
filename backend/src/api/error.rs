@@ -1,5 +1,6 @@
-use axum::response::IntoResponse;
+use axum::{response::IntoResponse, Json};
 use hyper::StatusCode;
+use serde::Serialize;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -20,16 +21,31 @@ impl Error {
     }
 }
 
+#[derive(Serialize)]
+struct ErrorResponse {
+    message: String,
+}
+
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::Anyhow(_) => {
-                // TODO log error
+            Self::BadRequest(ref message) => {
+                log::warn!("Bad request: {:?}", message);
+
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(ErrorResponse {
+                        message: message.clone(),
+                    }),
+                )
+                    .into_response();
             }
-            Self::Sqlx(_) => {
-                // TODO log error
+            Self::Anyhow(ref err) => {
+                log::error!("Generic error: {:?}", err);
             }
-            Self::BadRequest(ref message) => {}
+            Self::Sqlx(ref err) => {
+                log::error!("Sqlx error: {:?}", err);
+            }
         };
 
         (self.status_code(), self.to_string()).into_response()

@@ -14,6 +14,7 @@ axum-extra = { version = "0.3", features = ["spa"] }
 hyper = { version = "0.14", features = ["full"] }
 reqwest = { version = "0.11", features = ["rustls", "json"], default-features = false }
 tower = "0.4"
+tower-http = { version = "0.3", features = ["trace"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -27,3 +28,8 @@ clap = { version = "3.2", features = ["derive"] }
 
 argon2 = { version = "0.4", features = ["std"] }
 rand_core = { version = "0.6", features = ["std"] }
+
+tracing = "0.1"
+tracing-log = "0.1"
+tracing-subscriber = { version = "0.3", features = ["tracing-log"] }
+log = "0.4"

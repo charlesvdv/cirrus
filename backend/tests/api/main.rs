@@ -41,4 +41,14 @@ async fn test_instance_init(db: sqlx::SqlitePool) {
         .unwrap();
 
     assert_eq!(resp.status(), StatusCode::OK);
+
+    let mut resp = app
+        .borrow_mut()
+        .oneshot(Request::get("/api/instance").empty_body())
+        .await
+        .unwrap();
+
+    assert_eq!(resp.status(), StatusCode::OK);
+    let instance = common::to_json::<Instance>(&mut resp).await;
+    assert!(instance.is_initialized());
 }

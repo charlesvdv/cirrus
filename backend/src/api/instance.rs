@@ -1,4 +1,3 @@
-use anyhow::bail;
 use axum::{response::Json, Extension};
 use serde::Deserialize;
 use sqlx::SqlitePool;
