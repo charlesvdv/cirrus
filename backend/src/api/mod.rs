@@ -3,14 +3,12 @@ use axum::{
     routing::{get, post},
     Extension, Router,
 };
+use axum_extra::routing::SpaRouter;
 use sqlx::SqlitePool;
 use tower_http::trace::TraceLayer;
 
-use self::ui::spa_router;
-
 mod error;
 mod instance;
-mod ui;
 
 pub use error::Error;
 
@@ -25,7 +23,7 @@ pub fn build_api_router(ui_assets_path: &std::path::Path, db_pool: SqlitePool) -
         .layer(TraceLayer::new_for_http());
 
     Router::new()
-        .merge(spa_router(ui_assets_path))
+        .merge(SpaRouter::new("/assets", ui_assets_path))
         .nest("/api", api_routes)
 }
 
