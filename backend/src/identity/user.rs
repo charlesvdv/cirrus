@@ -1,13 +1,21 @@
 use anyhow::Result;
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
-    Argon2,
+    Argon2, PasswordVerifier,
 };
 
 use super::{IdentityError, Role};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, sqlx::Type)]
+#[sqlx(transparent)]
 pub struct UserId(i64);
+
+impl UserId {
+    pub fn new(id: i64) -> UserId {
+        UserId(id)
+    }
+}
 
 pub struct User {
     id: UserId,
@@ -54,10 +62,10 @@ impl NewUser {
 }
 
 #[derive(Deserialize)]
-struct Password(String);
+pub struct Password(String);
 
 impl Password {
-    fn hash(&self) -> Result<PasswordHash> {
+    pub fn hash(&self) -> Result<PasswordHash> {
         let salt = SaltString::generate(&mut OsRng);
         let hash = Argon2::default()
             .hash_password(self.0.as_bytes(), &salt)?
@@ -73,7 +81,22 @@ impl std::fmt::Debug for Password {
     }
 }
 
-struct PasswordHash(String);
+#[derive(sqlx::Type)]
+#[sqlx(transparent)]
+pub struct PasswordHash(String);
+
+impl PasswordHash {
+    pub fn from_str(pwd: String) -> PasswordHash {
+        PasswordHash(pwd)
+    }
+
+    pub fn verify_password(&self, password: &str) -> Result<()> {
+        let hash = argon2::PasswordHash::new(&self.0)?;
+        Argon2::default().verify_password(password.as_bytes(), &hash)?;
+
+        Ok(())
+    }
+}
 
 pub async fn get_user(conn: &mut sqlx::SqliteConnection, id: &UserId) -> Result<Option<User>> {
     let record = sqlx::query!(
@@ -110,7 +133,7 @@ pub async fn create_user(
     let result = sqlx::query!(
         "INSERT INTO user(name, password, role) VALUES(?, ?, (SELECT id FROM role WHERE name = ?))",
         user.name,
-        user.password.0,
+        user.password,
         role_name,
     )
     .execute(&mut *conn)

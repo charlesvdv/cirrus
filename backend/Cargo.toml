@@ -7,7 +7,7 @@ description = "A fast and simple personal cloud"
 [dependencies]
 
 tokio = { version = "1.20", features = ["full"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "migrate"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "migrate", "chrono"] }
 
 axum = { version = "0.5", features = ["macros"] }
 axum-extra = { version = "0.3", features = ["spa"] }
@@ -27,9 +27,11 @@ thiserror = "1.0"
 clap = { version = "3.2", features = ["derive"] }
 
 argon2 = { version = "0.4", features = ["std"] }
+rand = { version = "0.8", features = ["std"] }
 rand_core = { version = "0.6", features = ["std"] }
 
 tracing = "0.1"
 tracing-log = "0.1"
 tracing-subscriber = { version = "0.3", features = ["tracing-log"] }
 log = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
