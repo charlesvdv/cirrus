@@ -2,32 +2,38 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-const ADMIN: &'static str = "admin";
-const USER: &'static str = "user";
+const ADMIN: &'static str = "Administrator";
+const USER: &'static str = "User";
 
 #[derive(Clone, Deserialize, Debug)]
 pub enum Role {
-    Admin,
+    Administrator,
     User,
 }
 
 impl ToString for Role {
     fn to_string(&self) -> String {
         match self {
-            Role::Admin => ADMIN.to_string(),
+            Role::Administrator => ADMIN.to_string(),
             Role::User => USER.to_string(),
         }
     }
 }
 
 impl FromStr for Role {
-    type Err = anyhow::Error;
+    type Err = std::convert::Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            ADMIN => Ok(Role::Admin),
+            ADMIN => Ok(Role::Administrator),
             USER => Ok(Role::User),
-            unknown_role => anyhow::bail!("Unknown role '{}'", unknown_role),
+            unknown_role => {
+                log::error!(
+                    "Failed to convert role {:?} to a known role, defaulting to default role",
+                    unknown_role
+                );
+                Ok(Role::User)
+            }
         }
     }
 }

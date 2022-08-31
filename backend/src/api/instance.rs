@@ -4,7 +4,7 @@ use sqlx::SqlitePool;
 
 use crate::api::Error;
 use crate::api::Result;
-use crate::identity::{self, CreateUser};
+use crate::identity::{self, NewUser};
 use crate::instance::{self, Instance};
 
 pub async fn instance_get(Extension(db_pool): Extension<SqlitePool>) -> Result<Json<Instance>> {
@@ -17,7 +17,7 @@ pub async fn instance_get(Extension(db_pool): Extension<SqlitePool>) -> Result<J
 
 #[derive(Deserialize, Debug)]
 pub struct InitInstance {
-    admin: CreateUser,
+    admin: NewUser,
 }
 
 pub async fn instance_init(

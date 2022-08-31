@@ -2,20 +2,32 @@ use axum::{response::IntoResponse, Json};
 use hyper::StatusCode;
 use serde::Serialize;
 
+use crate::identity::IdentityError;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("an error occured with the database")]
-    Sqlx(#[from] sqlx::Error),
+    Other(#[from] sqlx::Error),
     #[error("an internal server error occured")]
-    Anyhow(#[from] anyhow::Error),
+    Database(#[from] anyhow::Error),
     #[error("{0}")]
     BadRequest(String),
+}
+
+impl From<IdentityError> for Error {
+    fn from(err: IdentityError) -> Self {
+        match err {
+            IdentityError::Other(e) => Error::Database(e),
+            IdentityError::Database(e) => Error::Other(e),
+            e => Error::BadRequest(e.to_string()),
+        }
+    }
 }
 
 impl Error {
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::Sqlx(_) | Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Other(_) | Self::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::BadRequest(_) => StatusCode::BAD_REQUEST,
         }
     }
@@ -40,10 +52,10 @@ impl IntoResponse for Error {
                 )
                     .into_response();
             }
-            Self::Anyhow(ref err) => {
+            Self::Database(ref err) => {
                 log::error!("Generic error: {:?}", err);
             }
-            Self::Sqlx(ref err) => {
+            Self::Other(ref err) => {
                 log::error!("Sqlx error: {:?}", err);
             }
         };
