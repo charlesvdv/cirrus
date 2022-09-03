@@ -9,6 +9,7 @@ use tower_http::trace::TraceLayer;
 
 mod error;
 mod instance;
+mod users;
 
 pub use error::Error;
 
@@ -17,8 +18,9 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub fn build_api_router(ui_assets_path: &std::path::Path, db_pool: SqlitePool) -> Router {
     let api_routes = Router::new()
         .route("/health", get(health_handler))
-        .route("/instance", get(instance::instance_get))
-        .route("/instance/init", post(instance::instance_init))
+        .route("/instance", get(instance::get_instance))
+        .route("/instance/init", post(instance::init_instance))
+        .route("/users/login", post(users::login))
         .layer(Extension(db_pool))
         .layer(TraceLayer::new_for_http());
 

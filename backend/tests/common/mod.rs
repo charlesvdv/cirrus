@@ -1,5 +1,7 @@
 use cirrus_backend::{App, Config, DatabaseConfig};
 
+mod provisioning;
+
 pub struct TestApp {
     pub address: String,
 }

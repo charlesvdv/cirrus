@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, TimeZone, Utc};
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 
@@ -13,6 +13,7 @@ pub struct LoginUser {
     password: String,
 }
 
+#[derive(Serialize, Debug)]
 pub struct Session {
     token: String,
     user_id: UserId,
@@ -29,9 +30,25 @@ impl Session {
             expired_at: Utc::now() + Duration::minutes(30),
         }
     }
+
+    fn verify_session(&self, token: &str) -> Result<(), String> {
+        if self.token != token {
+            log::error!("Token are not matching. Not normal...");
+            return Err(String::from("Token are not matching??"));
+        }
+
+        if Utc::now() < self.expired_at {
+            Ok(())
+        } else {
+            Err(format!(
+                "Token has expired since {}",
+                (Utc::now() - self.expired_at).to_string()
+            ))
+        }
+    }
 }
 
-pub async fn login(
+pub async fn authenticate(
     conn: &mut sqlx::SqliteConnection,
     login: LoginUser,
 ) -> Result<Session, IdentityError> {
@@ -41,10 +58,14 @@ pub async fn login(
     )
     .fetch_optional(&mut *conn)
     .await?
-    .ok_or_else(|| IdentityError::UserNameOrPasswordInvalid)?;
+    .ok_or_else(|| {
+        log::debug!("User not found: {}", login.name);
+        IdentityError::UserNameOrPasswordInvalid
+    })?;
 
     let user_password = PasswordHash::from_str(user.password);
     if user_password.verify_password(&login.password).is_err() {
+        log::debug!("Password are not matching");
         return Err(IdentityError::UserNameOrPasswordInvalid);
     }
 
@@ -62,4 +83,40 @@ pub async fn login(
     .await?;
 
     Ok(session)
+}
+
+pub async fn verify_session_token(
+    conn: &mut sqlx::SqliteConnection,
+    token: String,
+) -> Result<(), IdentityError> {
+    let session = sqlx::query!(
+        "SELECT token, user, expired_at FROM session WHERE token = ?",
+        token
+    )
+    .fetch_optional(&mut *conn)
+    .await?
+    .ok_or_else(|| {
+        log::debug!("Session token not found");
+        IdentityError::InvalidSessionToken
+    })?;
+
+    let session = Session {
+        token: session.token,
+        user_id: UserId::new(session.user),
+        expired_at: Utc.timestamp(session.expired_at, 0),
+    };
+
+    session.verify_session(&token).map_err(|e| {
+        log::debug!("Failed to verify token: {}", e);
+        IdentityError::InvalidSessionToken
+    })
+}
+
+pub async fn delete_expired_sessions(conn: &mut sqlx::SqliteConnection) -> anyhow::Result<()> {
+    let current_time = Utc::now().timestamp();
+    sqlx::query!("DELETE FROM session WHERE expired_at < ?", current_time)
+        .execute(&mut *conn)
+        .await?;
+
+    Ok(())
 }

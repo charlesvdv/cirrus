@@ -7,7 +7,7 @@ use argon2::{
 use super::{IdentityError, Role};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, sqlx::Type)]
+#[derive(Serialize, Deserialize, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub struct UserId(i64);
 

@@ -12,6 +12,8 @@ pub enum Error {
     Database(#[from] anyhow::Error),
     #[error("{0}")]
     BadRequest(String),
+    #[error("Forbidden")]
+    Forbidden,
 }
 
 impl From<IdentityError> for Error {
@@ -19,6 +21,7 @@ impl From<IdentityError> for Error {
         match err {
             IdentityError::Other(e) => Error::Database(e),
             IdentityError::Database(e) => Error::Other(e),
+            IdentityError::InvalidSessionToken => Error::Forbidden,
             e => Error::BadRequest(e.to_string()),
         }
     }
@@ -28,6 +31,7 @@ impl Error {
     fn status_code(&self) -> StatusCode {
         match *self {
             Self::Other(_) | Self::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Forbidden => StatusCode::FORBIDDEN,
             Self::BadRequest(_) => StatusCode::BAD_REQUEST,
         }
     }
@@ -57,6 +61,9 @@ impl IntoResponse for Error {
             }
             Self::Other(ref err) => {
                 log::error!("Sqlx error: {:?}", err);
+            }
+            Self::Forbidden => {
+                log::debug!("Forbidden")
             }
         };
 

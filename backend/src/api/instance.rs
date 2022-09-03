@@ -5,9 +5,10 @@ use sqlx::SqlitePool;
 use crate::api::Error;
 use crate::api::Result;
 use crate::identity::{self, NewUser};
+use crate::instance::InitInstance;
 use crate::instance::{self, Instance};
 
-pub async fn instance_get(Extension(db_pool): Extension<SqlitePool>) -> Result<Json<Instance>> {
+pub async fn get_instance(Extension(db_pool): Extension<SqlitePool>) -> Result<Json<Instance>> {
     let mut tx = db_pool.begin().await?;
     let instance = instance::get(&mut tx).await?;
     tx.commit().await?;
@@ -15,12 +16,7 @@ pub async fn instance_get(Extension(db_pool): Extension<SqlitePool>) -> Result<J
     Ok(Json(instance))
 }
 
-#[derive(Deserialize, Debug)]
-pub struct InitInstance {
-    admin: NewUser,
-}
-
-pub async fn instance_init(
+pub async fn init_instance(
     Extension(db_pool): Extension<SqlitePool>,
     Json(payload): Json<InitInstance>,
 ) -> Result<()> {

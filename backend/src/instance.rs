@@ -1,6 +1,15 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+use crate::identity::{self, IdentityError, NewUser};
+
 const INSTANCE_ID: i64 = 0;
+
+#[derive(thiserror::Error, Debug)]
+pub enum InstanceError {
+    #[error("Instance already initialized")]
+    AlreadyInitialized,
+}
 
 /// Describe global information about the instance
 #[derive(Default, Clone, Serialize, Deserialize)]
@@ -16,6 +25,27 @@ impl Instance {
     pub fn mark_as_initialized(&mut self) {
         self.is_initialized = true;
     }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct InitInstance {
+    pub admin: NewUser,
+}
+
+pub async fn init(conn: &mut sqlx::SqliteConnection, input: &mut InitInstance) -> Result<Instance> {
+    let mut instance = get(conn).await?;
+    if instance.is_initialized() {
+        anyhow::bail!(InstanceError::AlreadyInitialized);
+    }
+
+    input.admin.force_as_admin();
+
+    identity::create_user(conn, &input.admin).await?;
+
+    instance.mark_as_initialized();
+    update(conn, &instance).await?;
+
+    Ok(instance)
 }
 
 pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance, sqlx::Error> {

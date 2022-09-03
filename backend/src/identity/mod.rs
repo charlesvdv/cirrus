@@ -1,4 +1,4 @@
-mod login;
+pub mod login;
 mod role;
 mod user;
 
@@ -14,6 +14,8 @@ pub enum IdentityError {
     UserNameTooLong,
     #[error("User name or password is invalid")]
     UserNameOrPasswordInvalid,
+    #[error("Invalid session token")]
+    InvalidSessionToken,
 
     #[error("Unexpected database error")]
     Database(#[from] sqlx::Error),
