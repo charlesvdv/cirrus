@@ -1,11 +1,17 @@
+use anyhow::{bail, Result};
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 
-use super::{
-    user::{PasswordHash, UserId},
-    IdentityError, Password,
-};
+use super::users::{PasswordHash, UserId};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AuthError {
+    #[error("User name or password is invalid")]
+    UserNameOrPasswordInvalid,
+    #[error("Invalid session token")]
+    InvalidSessionToken,
+}
 
 #[derive(Deserialize, Debug)]
 pub struct LoginUser {
@@ -48,10 +54,7 @@ impl Session {
     }
 }
 
-pub async fn authenticate(
-    conn: &mut sqlx::SqliteConnection,
-    login: LoginUser,
-) -> Result<Session, IdentityError> {
+pub async fn authenticate(conn: &mut sqlx::SqliteConnection, login: LoginUser) -> Result<Session> {
     let user = sqlx::query!(
         "SELECT id, name, password FROM user WHERE name = ?",
         login.name
@@ -60,13 +63,13 @@ pub async fn authenticate(
     .await?
     .ok_or_else(|| {
         log::debug!("User not found: {}", login.name);
-        IdentityError::UserNameOrPasswordInvalid
+        AuthError::UserNameOrPasswordInvalid
     })?;
 
     let user_password = PasswordHash::from_str(user.password);
     if user_password.verify_password(&login.password).is_err() {
         log::debug!("Password are not matching");
-        return Err(IdentityError::UserNameOrPasswordInvalid);
+        bail!(AuthError::UserNameOrPasswordInvalid);
     }
 
     // TODO: why do we need a unwrap() here? sqlx bug?
@@ -85,10 +88,7 @@ pub async fn authenticate(
     Ok(session)
 }
 
-pub async fn verify_session_token(
-    conn: &mut sqlx::SqliteConnection,
-    token: String,
-) -> Result<(), IdentityError> {
+pub async fn verify_session_token(conn: &mut sqlx::SqliteConnection, token: String) -> Result<()> {
     let session = sqlx::query!(
         "SELECT token, user, expired_at FROM session WHERE token = ?",
         token
@@ -97,7 +97,7 @@ pub async fn verify_session_token(
     .await?
     .ok_or_else(|| {
         log::debug!("Session token not found");
-        IdentityError::InvalidSessionToken
+        AuthError::InvalidSessionToken
     })?;
 
     let session = Session {
@@ -108,8 +108,10 @@ pub async fn verify_session_token(
 
     session.verify_session(&token).map_err(|e| {
         log::debug!("Failed to verify token: {}", e);
-        IdentityError::InvalidSessionToken
-    })
+        AuthError::InvalidSessionToken
+    })?;
+
+    Ok(())
 }
 
 pub async fn delete_expired_sessions(conn: &mut sqlx::SqliteConnection) -> anyhow::Result<()> {

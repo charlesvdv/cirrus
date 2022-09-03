@@ -1,14 +1,19 @@
+use axum::routing::{get, post};
+use axum::Router;
 use axum::{response::Json, Extension};
-use serde::Deserialize;
 use sqlx::SqlitePool;
 
-use crate::api::Error;
 use crate::api::Result;
-use crate::identity::{self, NewUser};
 use crate::instance::InitInstance;
 use crate::instance::{self, Instance};
 
-pub async fn get_instance(Extension(db_pool): Extension<SqlitePool>) -> Result<Json<Instance>> {
+pub fn router() -> Router {
+    Router::new()
+        .route("/instance", get(get_instance))
+        .route("/instance/init", post(init_instance))
+}
+
+async fn get_instance(Extension(db_pool): Extension<SqlitePool>) -> Result<Json<Instance>> {
     let mut tx = db_pool.begin().await?;
     let instance = instance::get(&mut tx).await?;
     tx.commit().await?;
@@ -16,26 +21,13 @@ pub async fn get_instance(Extension(db_pool): Extension<SqlitePool>) -> Result<J
     Ok(Json(instance))
 }
 
-pub async fn init_instance(
+async fn init_instance(
     Extension(db_pool): Extension<SqlitePool>,
-    Json(payload): Json<InitInstance>,
+    Json(mut payload): Json<InitInstance>,
 ) -> Result<()> {
     let mut tx = db_pool.begin().await?;
 
-    let mut instance = instance::get(&mut tx).await?;
-    if instance.is_initialized() {
-        return Err(Error::BadRequest(String::from(
-            "Instance is already initialized",
-        )));
-    }
-
-    let mut admin = payload.admin;
-    admin.force_as_admin();
-
-    identity::create_user(&mut tx, &admin).await?;
-
-    instance.mark_as_initialized();
-    instance::update(&mut tx, &instance).await?;
+    instance::init(&mut tx, &mut payload).await?;
 
     tx.commit().await?;
 

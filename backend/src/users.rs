@@ -1,11 +1,19 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2, PasswordVerifier,
 };
 
-use super::{IdentityError, Role};
+use super::role::Role;
 use serde::{Deserialize, Serialize};
+
+#[derive(thiserror::Error, Debug)]
+pub enum UserError {
+    #[error("User name is empty")]
+    UserNameEmpty,
+    #[error("User name too long")]
+    UserNameTooLong,
+}
 
 #[derive(Serialize, Deserialize, sqlx::Type, Debug)]
 #[sqlx(transparent)]
@@ -25,13 +33,13 @@ pub struct User {
 }
 
 impl User {
-    fn from_new_user(new_user: &NewUser) -> Result<Self, IdentityError> {
+    fn from_new_user(new_user: &NewUser) -> Result<Self> {
         if new_user.name.is_empty() {
-            return Err(IdentityError::UserNameEmpty);
+            bail!(UserError::UserNameEmpty);
         }
 
         if new_user.name.len() > 64 {
-            return Err(IdentityError::UserNameTooLong);
+            bail!(UserError::UserNameTooLong);
         }
 
         let role = new_user.role.as_ref().unwrap_or_else(|| {
@@ -98,7 +106,7 @@ impl PasswordHash {
     }
 }
 
-pub async fn get_user(conn: &mut sqlx::SqliteConnection, id: &UserId) -> Result<Option<User>> {
+pub async fn get(conn: &mut sqlx::SqliteConnection, id: &UserId) -> Result<Option<User>> {
     let record = sqlx::query!(
         r#"
         SELECT user.id, user.name, user.password, role.name as role FROM user
@@ -123,10 +131,7 @@ pub async fn get_user(conn: &mut sqlx::SqliteConnection, id: &UserId) -> Result<
     }
 }
 
-pub async fn create_user(
-    conn: &mut sqlx::SqliteConnection,
-    new_user: &NewUser,
-) -> Result<User, IdentityError> {
+pub async fn create(conn: &mut sqlx::SqliteConnection, new_user: &NewUser) -> Result<User> {
     let mut user = User::from_new_user(new_user)?;
 
     let role_name = user.role.to_string();

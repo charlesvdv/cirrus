@@ -1,8 +1,4 @@
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Extension, Router,
-};
+use axum::{http::StatusCode, routing::get, Extension, Router};
 use axum_extra::routing::SpaRouter;
 use sqlx::SqlitePool;
 use tower_http::trace::TraceLayer;
@@ -18,9 +14,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub fn build_api_router(ui_assets_path: &std::path::Path, db_pool: SqlitePool) -> Router {
     let api_routes = Router::new()
         .route("/health", get(health_handler))
-        .route("/instance", get(instance::get_instance))
-        .route("/instance/init", post(instance::init_instance))
-        .route("/users/login", post(users::login))
+        .merge(instance::router())
+        .merge(users::router())
         .layer(Extension(db_pool))
         .layer(TraceLayer::new_for_http());
 

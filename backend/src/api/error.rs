@@ -2,36 +2,43 @@ use axum::{response::IntoResponse, Json};
 use hyper::StatusCode;
 use serde::Serialize;
 
-use crate::identity::IdentityError;
+use crate::{auth::AuthError, users::UserError};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("an error occured with the database")]
-    Other(#[from] sqlx::Error),
+    Internal(anyhow::Error),
     #[error("an internal server error occured")]
-    Database(#[from] anyhow::Error),
+    Database(#[from] sqlx::Error),
     #[error("{0}")]
-    BadRequest(String),
+    BadRequest(anyhow::Error),
     #[error("Forbidden")]
-    Forbidden,
+    Forbidden(anyhow::Error),
 }
 
-impl From<IdentityError> for Error {
-    fn from(err: IdentityError) -> Self {
-        match err {
-            IdentityError::Other(e) => Error::Database(e),
-            IdentityError::Database(e) => Error::Other(e),
-            IdentityError::InvalidSessionToken => Error::Forbidden,
-            e => Error::BadRequest(e.to_string()),
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        if err.is::<AuthError>() {
+            return Error::Forbidden(err);
         }
+
+        if err.is::<UserError>() {
+            return Error::BadRequest(err);
+        }
+
+        if err.is::<sqlx::Error>() {
+            return Error::Database(err.downcast().unwrap());
+        }
+
+        return Error::Internal(err);
     }
 }
 
 impl Error {
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::Other(_) | Self::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::Forbidden => StatusCode::FORBIDDEN,
+            Self::Internal(_) | Self::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Forbidden(_) => StatusCode::FORBIDDEN,
             Self::BadRequest(_) => StatusCode::BAD_REQUEST,
         }
     }
@@ -45,13 +52,13 @@ struct ErrorResponse {
 impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::BadRequest(ref message) => {
-                log::warn!("Bad request: {:?}", message);
+            Self::BadRequest(ref err) => {
+                log::warn!("Bad request: {:?}", err);
 
                 return (
                     StatusCode::BAD_REQUEST,
                     Json(ErrorResponse {
-                        message: message.clone(),
+                        message: format!("{}", err),
                     }),
                 )
                     .into_response();
@@ -59,11 +66,11 @@ impl IntoResponse for Error {
             Self::Database(ref err) => {
                 log::error!("Generic error: {:?}", err);
             }
-            Self::Other(ref err) => {
+            Self::Internal(ref err) => {
                 log::error!("Sqlx error: {:?}", err);
             }
-            Self::Forbidden => {
-                log::debug!("Forbidden")
+            Self::Forbidden(ref err) => {
+                log::debug!("Forbidden: {:?}", err)
             }
         };
 

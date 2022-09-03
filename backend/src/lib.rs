@@ -2,9 +2,11 @@ use std::pin::Pin;
 use std::{net::TcpListener, str::FromStr};
 
 pub mod api;
+pub mod auth;
 mod config;
-pub mod identity;
 pub mod instance;
+pub mod role;
+pub mod users;
 
 pub use config::*;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};

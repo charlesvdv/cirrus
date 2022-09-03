@@ -71,5 +71,5 @@ async fn test_instance_init_with_empty_name(db: sqlx::SqlitePool) {
     assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
 
     let error_msg = &common::to_json::<Value>(&mut resp).await["message"];
-    assert_eq!(error_msg, "User name cannot be empty")
+    assert_eq!(error_msg, "User name is empty")
 }

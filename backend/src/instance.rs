@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::identity::{self, IdentityError, NewUser};
+use crate::users::{self, NewUser};
 
 const INSTANCE_ID: i64 = 0;
 
@@ -35,12 +35,12 @@ pub struct InitInstance {
 pub async fn init(conn: &mut sqlx::SqliteConnection, input: &mut InitInstance) -> Result<Instance> {
     let mut instance = get(conn).await?;
     if instance.is_initialized() {
-        anyhow::bail!(InstanceError::AlreadyInitialized);
+        bail!(InstanceError::AlreadyInitialized);
     }
 
     input.admin.force_as_admin();
 
-    identity::create_user(conn, &input.admin).await?;
+    users::create(conn, &input.admin).await?;
 
     instance.mark_as_initialized();
     update(conn, &instance).await?;
@@ -48,7 +48,7 @@ pub async fn init(conn: &mut sqlx::SqliteConnection, input: &mut InitInstance) -
     Ok(instance)
 }
 
-pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance, sqlx::Error> {
+pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance> {
     let maybe_record = sqlx::query!(
         "SELECT is_initialized FROM instance WHERE id = ?",
         INSTANCE_ID
@@ -73,10 +73,7 @@ pub async fn get(conn: &mut sqlx::SqliteConnection) -> Result<Instance, sqlx::Er
     }
 }
 
-pub async fn update(
-    conn: &mut sqlx::SqliteConnection,
-    instance: &Instance,
-) -> Result<(), sqlx::Error> {
+pub async fn update(conn: &mut sqlx::SqliteConnection, instance: &Instance) -> Result<()> {
     let is_initialized_int = if instance.is_initialized { 1 } else { 0 };
     sqlx::query!(
         "UPDATE instance SET is_initialized = ? WHERE id = ?",
