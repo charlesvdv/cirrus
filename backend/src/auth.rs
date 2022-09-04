@@ -19,7 +19,7 @@ pub struct LoginUser {
     password: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Session {
     token: String,
     user_id: UserId,

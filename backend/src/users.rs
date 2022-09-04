@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{bail, Result};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -58,15 +60,9 @@ impl User {
 
 #[derive(Deserialize, Debug)]
 pub struct NewUser {
-    name: String,
-    password: Password,
-    role: Option<Role>,
-}
-
-impl NewUser {
-    pub fn force_as_admin(&mut self) {
-        self.role = Some(Role::Administrator);
-    }
+    pub name: String,
+    pub password: Password,
+    pub role: Option<Role>,
 }
 
 #[derive(Deserialize)]
@@ -86,6 +82,14 @@ impl Password {
 impl std::fmt::Debug for Password {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "*****")
+    }
+}
+
+impl FromStr for Password {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Password(s.into()))
     }
 }
 

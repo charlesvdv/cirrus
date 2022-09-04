@@ -1,7 +1,10 @@
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::users::{self, NewUser};
+use crate::{
+    role::Role,
+    users::{self, NewUser},
+};
 
 const INSTANCE_ID: i64 = 0;
 
@@ -38,7 +41,7 @@ pub async fn init(conn: &mut sqlx::SqliteConnection, input: &mut InitInstance) -
         bail!(InstanceError::AlreadyInitialized);
     }
 
-    input.admin.force_as_admin();
+    input.admin.role = Some(Role::Administrator);
 
     users::create(conn, &input.admin).await?;
 

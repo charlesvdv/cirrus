@@ -10,5 +10,3 @@ async fn app_starts_correctly() {
 
     assert!(response.status().is_success());
 }
-
-
