@@ -30,7 +30,7 @@ impl From<anyhow::Error> for Error {
             return Error::Database(err.downcast().unwrap());
         }
 
-        return Error::Internal(err);
+        Error::Internal(err)
     }
 }
 

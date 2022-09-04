@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-const ADMIN: &'static str = "Administrator";
-const USER: &'static str = "User";
+const ADMIN: &str = "Administrator";
+const USER: &str = "User";
 
 #[derive(Clone, Deserialize, Debug)]
 pub enum Role {

@@ -48,7 +48,7 @@ impl Session {
         } else {
             Err(format!(
                 "Token has expired since {}",
-                (Utc::now() - self.expired_at).to_string()
+                (Utc::now() - self.expired_at)
             ))
         }
     }
@@ -66,7 +66,7 @@ pub async fn authenticate(conn: &mut sqlx::SqliteConnection, login: LoginUser) -
         AuthError::UserNameOrPasswordInvalid
     })?;
 
-    let user_password = PasswordHash::from_str(user.password);
+    let user_password = user.password.parse::<PasswordHash>()?;
     if user_password.verify_password(&login.password).is_err() {
         log::debug!("Password are not matching");
         bail!(AuthError::UserNameOrPasswordInvalid);

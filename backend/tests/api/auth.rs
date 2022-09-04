@@ -1,10 +1,9 @@
 use std::borrow::BorrowMut;
 
 use axum::http::{Request, StatusCode};
-use serde_json::{json, Value};
+use serde_json::json;
 use tower::ServiceExt;
 
-use cirrus_backend::instance::Instance;
 use cirrus_backend::{api::build_api_router, auth::Session};
 
 use crate::common::{self, RequestBuilderExt};

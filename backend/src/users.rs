@@ -98,15 +98,19 @@ impl FromStr for Password {
 pub struct PasswordHash(String);
 
 impl PasswordHash {
-    pub fn from_str(pwd: String) -> PasswordHash {
-        PasswordHash(pwd)
-    }
-
     pub fn verify_password(&self, password: &str) -> Result<()> {
         let hash = argon2::PasswordHash::new(&self.0)?;
         Argon2::default().verify_password(password.as_bytes(), &hash)?;
 
         Ok(())
+    }
+}
+
+impl FromStr for PasswordHash {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(PasswordHash(s.into()))
     }
 }
 
