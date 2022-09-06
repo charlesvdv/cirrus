@@ -27,6 +27,10 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn token(&self) -> &str {
+        &self.token
+    }
+
     fn generate(user_id: UserId) -> Session {
         let token = Alphanumeric.sample_string(&mut rand::thread_rng(), 64);
 
@@ -88,7 +92,10 @@ pub async fn authenticate(conn: &mut sqlx::SqliteConnection, login: LoginUser) -
     Ok(session)
 }
 
-pub async fn verify_session_token(conn: &mut sqlx::SqliteConnection, token: String) -> Result<()> {
+pub async fn verify_session_token(
+    conn: &mut sqlx::SqliteConnection,
+    token: &str,
+) -> Result<UserId> {
     let session = sqlx::query!(
         "SELECT token, user, expired_at FROM session WHERE token = ?",
         token
@@ -106,12 +113,12 @@ pub async fn verify_session_token(conn: &mut sqlx::SqliteConnection, token: Stri
         expired_at: Utc.timestamp(session.expired_at, 0),
     };
 
-    session.verify_session(&token).map_err(|e| {
+    session.verify_session(token).map_err(|e| {
         log::debug!("Failed to verify token: {}", e);
         AuthError::InvalidSessionToken
     })?;
 
-    Ok(())
+    Ok(session.user_id)
 }
 
 pub async fn delete_expired_sessions(conn: &mut sqlx::SqliteConnection) -> anyhow::Result<()> {

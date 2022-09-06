@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 const ADMIN: &str = "Administrator";
 const USER: &str = "User";
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum Role {
     Administrator,
     User,

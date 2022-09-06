@@ -11,10 +11,11 @@ sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros"
 
 axum = { version = "0.5", features = ["macros"] }
 axum-extra = { version = "0.3", features = ["spa"] }
+axum-macros = "0.2"
 hyper = { version = "0.14", features = ["full"] }
 reqwest = { version = "0.11", features = ["rustls", "json"], default-features = false }
 tower = "0.4"
-tower-http = { version = "0.3", features = ["trace"] }
+tower-http = { version = "0.3", features = ["trace", "auth"] }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -23,6 +24,8 @@ anyhow = "1.0"
 dotenv = "0.15.0"
 lazy_static = "1.4"
 thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+futures-util = "0.3.24"
 
 clap = { version = "3.2", features = ["derive"] }
 
@@ -34,4 +37,3 @@ tracing = "0.1"
 tracing-log = "0.1"
 tracing-subscriber = { version = "0.3", features = ["tracing-log"] }
 log = "0.4"
-chrono = { version = "0.4", features = ["serde"] }

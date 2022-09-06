@@ -1,5 +1,5 @@
 use axum::body::Body;
-use axum::http::{request, Request};
+use axum::http::{request, HeaderValue, Request};
 use axum::response::Response;
 use cirrus_backend::instance::{self, InitInstance};
 use cirrus_backend::users::NewUser;
@@ -10,6 +10,8 @@ pub trait RequestBuilderExt {
     fn json(self, json: serde_json::Value) -> Request<Body>;
 
     fn empty_body(self) -> Request<Body>;
+
+    fn with_auth(self, token: &str) -> request::Builder;
 }
 
 impl RequestBuilderExt for request::Builder {
@@ -21,6 +23,15 @@ impl RequestBuilderExt for request::Builder {
 
     fn empty_body(self) -> Request<Body> {
         self.body(Body::empty()).expect("failed to build request")
+    }
+
+    fn with_auth(mut self, token: &str) -> request::Builder {
+        let headers = self.headers_mut().unwrap();
+        headers.insert(
+            "Authorization",
+            HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+        );
+        self
     }
 }
 

@@ -17,7 +17,7 @@ pub enum UserError {
     UserNameTooLong,
 }
 
-#[derive(Serialize, Deserialize, sqlx::Type, Debug)]
+#[derive(Serialize, Deserialize, sqlx::Type, Debug, Clone)]
 #[sqlx(transparent)]
 pub struct UserId(i64);
 
@@ -27,14 +27,20 @@ impl UserId {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct User {
     id: UserId,
     name: String,
+    #[serde(skip)]
     password: PasswordHash,
     role: Role,
 }
 
 impl User {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
     fn from_new_user(new_user: &NewUser) -> Result<Self> {
         if new_user.name.is_empty() {
             bail!(UserError::UserNameEmpty);
@@ -93,7 +99,7 @@ impl FromStr for Password {
     }
 }
 
-#[derive(sqlx::Type)]
+#[derive(Default, sqlx::Type)]
 #[sqlx(transparent)]
 pub struct PasswordHash(String);
 
@@ -111,6 +117,12 @@ impl FromStr for PasswordHash {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(PasswordHash(s.into()))
+    }
+}
+
+impl std::fmt::Debug for PasswordHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "*****")
     }
 }
 

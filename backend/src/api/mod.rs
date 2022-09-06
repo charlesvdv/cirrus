@@ -3,10 +3,12 @@ use axum_extra::routing::SpaRouter;
 use sqlx::SqlitePool;
 use tower_http::trace::TraceLayer;
 
+mod auth;
 mod error;
 mod instance;
 mod users;
 
+pub use auth::AuthChecker;
 pub use error::Error;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -15,7 +17,7 @@ pub fn build_api_router(ui_assets_path: &std::path::Path, db_pool: SqlitePool) -
     let api_routes = Router::new()
         .route("/health", get(health_handler))
         .merge(instance::router())
-        .merge(users::router())
+        .merge(users::router(db_pool.clone()))
         .layer(Extension(db_pool))
         .layer(TraceLayer::new_for_http());
 
